@@ -1,19 +1,38 @@
-# Baymax: Cross-Domain Evidence-to-Action Agent
+# 🚑 B A Y M A X
+
+**ER intern ที่ไม่เหนื่อย ไม่ลืม ไม่อายที่จะถาม**
+
+![Baymax changes its action when ER capacity changes](assets/baymax-decision-flip.gif)
+
+> “ผมไม่ได้ฉลาดเพราะมีอวัยวะเยอะ ผมฉลาดเพราะรู้ว่าควรใช้อวัยวะไหน
+> เมื่อไร และยอมเปลี่ยนใจเมื่ออีกมุมเปิดความจริงใหม่”
 
 Baymax is not impressive because it has more data. It is impressive when
 another perspective changes what it decides to do.
 
 ```text
-cheap NOSE
-  -> patient eye: what does this case look like?
-  -> drug-safety eye: what risk is invisible from the patient view?
-  -> brain: compare the patient-only decision with the cross-domain decision
-  -> brakes: act, or stop and require human review
-  -> nerves + hands: hand off or change durable state
-  -> immune: pin the decision-changing trajectory in CI
+         👁 Patient world      👁 Drug world
+          "เคสนี้เหมือนอะไร"     "มีอะไรซ่อนอยู่ไหม"
+                \              /
+                 └──🧠 Brain──┘
+        👃 Nose ──┤ เปลี่ยน action เพราะมุมมองเปลี่ยน
+                   ↓
+              🛑 Brakes → ⚡ Nerves → 🤝 Hands → 🛡 Verify
 ```
 
-## Three Cases, One Movie
+## Watch Him Think
+
+```bash
+make sync
+make audit
+make ui
+```
+
+Open `http://localhost:8000/ui/`. The live surface reads the generated audit
+receipt, narrates what Baymax noticed, admits uncertainty, shows what acted or
+stopped, and only claims verification when the receipt proves it.
+
+## Three Golden Cases
 
 ```text
 CASE 1 · ATTENTION FLIP
@@ -35,11 +54,6 @@ abdominal pain after Ibuprofen
 → population signal only; no causality claim
 → brake blocks autonomous discharge
 → clinician-review nerve receives and ACKs the case
-```
-
-```bash
-make sync
-make demo
 ```
 
 That is the recruiter path. Three cases show that Baymax allocates attention,

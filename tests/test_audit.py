@@ -1,4 +1,4 @@
-from baymax.audit import run_audit_suite, run_case
+from baymax.audit import ROOT, run_audit_suite, run_case
 
 
 def test_nose_stops_low_value_case_before_eyes(tmp_path):
@@ -79,3 +79,16 @@ def test_immune_suite_pins_counterfactual_behavior():
     suite = run_audit_suite()
     assert suite["immune_proof"]["behavior_changed"] is True
     assert suite["decision_flip_proof"]["action_changed"] is True
+
+
+def test_ui_story_is_bound_to_honest_proof():
+    html = (ROOT / "ui" / "index.html").read_text(encoding="utf-8")
+    script = (ROOT / "ui" / "app.js").read_text(encoding="utf-8")
+    hero_gif = ROOT / "assets" / "baymax-decision-flip.gif"
+    assert "../outputs/baymax_audit.json" in html
+    assert "../outputs/baymax_audit.json" in script
+    assert hero_gif.stat().st_size > 50_000
+    assert "action_changed === true" in script
+    assert "hands_executed === false" in script
+    assert "receiver_acknowledged === true" in script
+    assert "Warfarin" not in html + script

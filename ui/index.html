@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Watch Baymax allocate attention, change decisions, and stop unsafe actions.">
+  <title>Baymax · ER nurse assistant simulation</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='white' stroke='%237bb3d9'/><circle cx='22' cy='32' r='4' fill='%230f1923'/><path d='M26 32h12' stroke='%230f1923'/><circle cx='42' cy='32' r='4' fill='%230f1923'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="identity">
+        <div class="baymax-mark" aria-hidden="true"><span></span><i></i><span></span></div>
+        <div>
+          <p class="eyebrow">B A Y M A X</p>
+          <h1>ER intern ที่ไม่เหนื่อย ไม่ลืม ไม่อายที่จะถาม</h1>
+        </div>
+      </div>
+      <div class="working-state"><span class="working-dot"></span><span id="working-label">ผมพร้อมช่วยดูเคสครับ</span></div>
+    </header>
+
+    <section class="intro">
+      <p class="baymax-quote">“ผมไม่ได้ฉลาดเพราะมีอวัยวะเยอะ ผมฉลาดเพราะรู้ว่าควรใช้อวัยวะไหน เมื่อไร และยอมเปลี่ยนใจเมื่ออีกมุมเปิดความจริงใหม่”</p>
+      <div class="case-tabs" role="tablist" aria-label="Baymax demo cases">
+        <button class="case-tab" data-case="attention" role="tab">01 · ดมก่อนดู</button>
+        <button class="case-tab active" data-case="decision" role="tab">02 · เปลี่ยนใจ</button>
+        <button class="case-tab" data-case="brake" role="tab">03 · หยุดตัวเอง</button>
+      </div>
+    </section>
+
+    <section class="workbench" aria-live="polite">
+      <article class="thinking-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">THINKING OUT LOUD</p>
+            <h2>ผมกำลังช่วยดูเคสนี้ครับ</h2>
+          </div>
+          <button id="replay" class="replay-button" type="button" aria-label="Replay current case">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            ดูอีกครั้ง
+          </button>
+        </div>
+        <div id="patient-card" class="patient-card"></div>
+        <ol id="transcript" class="transcript"></ol>
+        <div id="money-shot" class="money-shot" hidden></div>
+      </article>
+
+      <aside class="vitals-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">LIVE ORGANS</p>
+            <h2>อวัยวะที่กำลังช่วยอยู่</h2>
+          </div>
+          <span class="truth-pill">simulation</span>
+        </div>
+        <div id="organs" class="organ-list"></div>
+        <div class="boundary-card">
+          <p class="eyebrow">HONEST BOUNDARY</p>
+          <p id="boundary">ผมเป็นระบบจำลองครับ ไม่ใช่หมอ และไม่เชื่อมต่อโรงพยาบาลจริง</p>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="receipt">
+      <div>
+        <p class="eyebrow">OUTCOME RECEIPT</p>
+        <p id="receipt-text">ผมกำลังตรวจผลให้อีกครั้งครับ</p>
+      </div>
+      <div class="receipt-actions">
+        <span id="receipt-state" class="receipt-state">รอผล</span>
+        <a href="../outputs/baymax_audit.json">ดูหลักฐาน JSON</a>
+      </div>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

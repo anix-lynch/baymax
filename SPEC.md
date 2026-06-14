@@ -38,6 +38,8 @@ The presentation is a three-case movie, not an organ museum:
 - [x] Immune tests defend skip, decision-change, and full closed-loop paths.
 - [x] CI regenerates one recruiter-readable audit receipt.
 - [x] `make demo` plays three memorable cases without opening sibling repos.
+- [x] Live UI narrates the same three cases and validates its outcome claims
+  against the generated audit receipt.
 
 ## Proof Boundary
 
