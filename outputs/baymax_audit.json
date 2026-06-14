@@ -1,0 +1,174 @@
+{
+  "audit_version": "baymax.v1",
+  "query": "62yo male chest pain diaphoresis aspirin",
+  "correlation_id": "baymax-audit-case",
+  "flow": [
+    "nose",
+    "left_eye",
+    "right_eye",
+    "brain",
+    "hands",
+    "outcome_check"
+  ],
+  "nose": {
+    "executed_before_eyes": true,
+    "route_to_eyes": true,
+    "reason": "safety terms fired: ['chest pain', 'diaphoresis']",
+    "batch_signals_proven": [
+      "anomaly",
+      "cluster",
+      "classify",
+      "rank",
+      "retrieval"
+    ],
+    "per_case_method": "cheap safety-term gate",
+    "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+    "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+    "batch_n": 5000,
+    "batch_llm_call_reduction_pct": 30,
+    "batch_serious_recall": 0.954
+  },
+  "left_eye": {
+    "source": "synthetic patient encounters",
+    "source_commit": "cfdc2b21751f9d3ac21163622b49cbd7f44549d7",
+    "source_artifact": "sources/healthcare-ai-data-engineer/data/raw/healthcare_dataset.csv",
+    "rows_scanned": 55500,
+    "reconciliation": {
+      "raw_rows": 55500,
+      "exact_dupes_removed": 5500,
+      "encounters_staging": 50000,
+      "canonical_patients_dim": 40235,
+      "resolver_artifact_patients": 40235
+    },
+    "hits": [
+      {
+        "source_id": "encounter:9",
+        "score": 2,
+        "condition": "Asthma",
+        "medication": "Aspirin",
+        "admission_type": "Elective"
+      },
+      {
+        "source_id": "encounter:26",
+        "score": 2,
+        "condition": "Obesity",
+        "medication": "Aspirin",
+        "admission_type": "Urgent"
+      },
+      {
+        "source_id": "encounter:42",
+        "score": 2,
+        "condition": "Hypertension",
+        "medication": "Aspirin",
+        "admission_type": "Urgent"
+      },
+      {
+        "source_id": "encounter:48",
+        "score": 2,
+        "condition": "Diabetes",
+        "medication": "Aspirin",
+        "admission_type": "Urgent"
+      },
+      {
+        "source_id": "encounter:63",
+        "score": 2,
+        "condition": "Cancer",
+        "medication": "Aspirin",
+        "admission_type": "Emergency"
+      }
+    ]
+  },
+  "right_eye": {
+    "source": "real openFDA FAERS adverse-event reports",
+    "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+    "source_artifact": "sources/healthcare-signal-platform/openfda_signals/data/openfda_reports_scaled.json",
+    "reports_scanned": 5000,
+    "semantic_layer_commit": "d51192c7e18abf151ac5df1935e78f854f072b7b",
+    "semantic_layer_artifact": "sources/healthcare-da/proof/reconcile_gcp_fabric.json",
+    "semantic_layer_n": 3000,
+    "hits": [
+      {
+        "source_id": "openfda:23355587",
+        "score": 4,
+        "primary_drug": "ASPIRIN",
+        "is_serious": true,
+        "reactions": "Abdominal pain upper; Adrenal insufficiency; Alanine aminotransferase increased; Anaphylactic reaction; Arthralgia; Aspartate aminotransferase abnormal; Back pain; Balance disorder; Blood alkaline phosphatase increased; Blood creatinine increased; Blood glucose decreased; Blood immunoglobulin A increased; Blood pressure diastolic decreased; Blood pressure fluctuation; Blood pressure systolic decreased; Blood test abnormal; Blood urea increased; Blood uric acid increased; Bronchitis; C-reactive protein increased; Cholecystitis acute; Cognitive disorder; Coordination abnormal; Cough; Dactylitis; Demyelination; Depressed mood; Depression; Diarrhoea; Dizziness; Drug hypersensitivity; Drug ineffective; Dry eye; Dry mouth; Dysphagia; Dyspnoea; Electric shock; Fall; Fatigue; Glomerular filtration rate increased; Glycosylated haemoglobin increased; Granulocyte count increased; Hyperhidrosis; Hypotension; Infusion related reaction; Intervertebral discitis; Joint noise; Miosis; Monocyte count increased; Multiple sclerosis; Muscular weakness; Nasal congestion; Nausea; Neuropathy peripheral; Neutrophil count increased; Oxygen saturation decreased; Pain; Post cholecystectomy syndrome; Post-traumatic stress disorder; Progressive multifocal leukoencephalopathy; Red blood cell count decreased; Red blood cell sedimentation rate increased; Rheumatoid arthritis; Rheumatoid factor increased; Spinal disorder; Syncope; Temperature intolerance; Therapeutic response decreased; Throat clearing; Throat irritation; Type 2 diabetes mellitus; Ulcer; Urticaria; Vitamin B12 deficiency; Vitamin B12 increased; Vitamin D deficiency; Weight decreased; White blood cell count increased; White blood cells urine positive"
+      },
+      {
+        "source_id": "openfda:23353876",
+        "score": 3,
+        "primary_drug": "ICY HOT PAIN RELIEVING CREAM",
+        "is_serious": false,
+        "reactions": "No adverse event; Drug ineffective"
+      },
+      {
+        "source_id": "openfda:23354942",
+        "score": 3,
+        "primary_drug": "ASPIRIN",
+        "is_serious": true,
+        "reactions": "Diaphragmatic hernia; Tachycardia; Gastric ulcer; Haemorrhage; Diarrhoea haemorrhagic; Thyroid hormones decreased; Haemoglobin abnormal"
+      },
+      {
+        "source_id": "openfda:23355187",
+        "score": 3,
+        "primary_drug": "ACETAMINOPHEN\\ASPIRIN\\CAFFEINE",
+        "is_serious": true,
+        "reactions": "Drug dependence"
+      },
+      {
+        "source_id": "openfda:23355188",
+        "score": 3,
+        "primary_drug": "ACETAMINOPHEN\\ASPIRIN\\CAFFEINE",
+        "is_serious": true,
+        "reactions": "Drug dependence"
+      }
+    ]
+  },
+  "brain_hands": {
+    "source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+    "triage_level": "NOW",
+    "red_flags": [
+      "high_risk_keyword:chest pain",
+      "high_risk_keyword:diaphoresis"
+    ],
+    "decision_basis": {
+      "left_eye_hits": 5,
+      "right_eye_hits": 5,
+      "right_eye_is_advisory": true,
+      "er_state": {
+        "available_beds": 1,
+        "occupancy_pct": 96,
+        "queue_length": 8
+      }
+    },
+    "disposition": "assign_bed",
+    "task_id": "task:baymax-audit-case:assign_bed",
+    "receiver_acknowledged": true,
+    "action_status": "committed",
+    "before_state": {
+      "committed": false,
+      "disposition": null,
+      "action_seq": null
+    },
+    "after_state": {
+      "committed": true,
+      "disposition": "assign_bed",
+      "action_seq": 1
+    },
+    "tool_receipt": {
+      "detail": "committed disposition assign_bed (seq 1)",
+      "applied": true
+    },
+    "outcome_verified": true,
+    "false_success_detected": false,
+    "trace_stages": [
+      "intake_accepted",
+      "decided",
+      "task_created",
+      "task_acknowledged",
+      "action_succeeded",
+      "outcome_verified"
+    ]
+  },
+  "verdict": "closed-loop simulation proven"
+}
