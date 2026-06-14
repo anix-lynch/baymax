@@ -13,29 +13,42 @@ cheap NOSE
   -> immune: pin the decision-changing trajectory in CI
 ```
 
-## The Stop-And-Read Proof
+## Three Cases, One Movie
 
 ```text
-Same case: abdominal pain after Ibuprofen
+CASE 1 · ATTENTION FLIP
+routine medication refill
+→ NOSE finds no cheap safety trigger
+→ expensive eyes stay closed
+→ no action attempted
 
-Patient eye only
-  -> SOON
-  -> discharge_plan
+CASE 2 · DECISION FLIP
+same critical chest-pain patient
+→ bed available: assign_bed
+→ ER gridlock: divert
+→ capacity perspective changes the action
 
-Add the drug-safety eye
-  -> 16/17 exact-Ibuprofen openFDA reports marked serious
-  -> population signal only; Baymax does NOT claim causality
-  -> brake blocks autonomous discharge
-  -> clinician-review nerve receives and ACKs the case
+CASE 3 · BRAKE SAVE
+abdominal pain after Ibuprofen
+→ patient-only: discharge_plan
+→ drug eye: 16/17 exact-Ibuprofen reports marked serious
+→ population signal only; no causality claim
+→ brake blocks autonomous discharge
+→ clinician-review nerve receives and ACKs the case
 ```
-
-This is the point of the two eyes: cross-domain evidence can change action
-policy without pretending the model knows more than the evidence supports.
-
-## Audit In One Command
 
 ```bash
 make sync
+make demo
+```
+
+That is the recruiter path. Three cases show that Baymax allocates attention,
+changes decisions when another perspective matters, and stops itself before an
+unsafe autonomous action.
+
+## Technical Audit
+
+```bash
 pip install -r requirements.txt
 make test
 make audit
@@ -74,8 +87,10 @@ does not pretend all five models execute online for every patient query.
 
 ```text
 baymax/
-├── baymax/audit.py             ✅ runs nose -> eyes -> brain -> hands -> verify
-├── tests/test_audit.py         ✅ proves skip-path and full closed-loop path
+├── baymax/demo.py              ✅ plays the three memorable cases
+├── baymax/audit.py             ✅ generates deep evidence receipts
+├── cases/legendary_cases.json  ✅ the public three-case screenplay
+├── tests/test_audit.py         ✅ pins every movie outcome in CI
 ├── scripts/sync_sources.sh     ✅ fetches the four public sibling sources
 ├── outputs/baymax_audit.json   🟡 three trajectories + dream-state audit
 ├── .github/workflows/audit.yml ✅ regenerates proof on every change

@@ -18,6 +18,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: make sync
       - run: make test
+      - run: make demo
       - run: make audit
       - uses: actions/upload-artifact@v4
         with:

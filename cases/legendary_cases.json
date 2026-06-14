@@ -1,0 +1,20 @@
+{
+  "attention_flip": {
+    "title": "Attention Flip",
+    "case": "routine medication refill",
+    "question": "Does this case deserve expensive evidence work?",
+    "proof": "NOSE stops before both eyes."
+  },
+  "decision_flip": {
+    "title": "Decision Flip",
+    "case": "62yo male chest pain diaphoresis aspirin",
+    "question": "Can another operational domain change the action?",
+    "proof": "Same critical patient: a free bed produces assign_bed; ER gridlock produces divert."
+  },
+  "brake_save": {
+    "title": "Brake Save",
+    "case": "abdominal pain after ibuprofen",
+    "question": "Can Baymax stop itself when another evidence domain adds uncertainty?",
+    "proof": "Patient-only suggests discharge_plan; drug-safety evidence changes policy to human_review."
+  }
+}

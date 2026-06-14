@@ -1,10 +1,13 @@
-.PHONY: sync audit test clean
+.PHONY: sync demo audit test clean
 
 sync:
 	bash scripts/sync_sources.sh
 
 audit:
 	python -m baymax.audit
+
+demo:
+	python -m baymax.demo
 
 test:
 	PYTHONPATH=. pytest tests -q

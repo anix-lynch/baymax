@@ -382,10 +382,10 @@
       },
       "verdict": "cross-domain brake and human handoff proven"
     },
-    "bounded_action": {
+    "capacity_bed_available": {
       "audit_version": "baymax.v1",
       "query": "62yo male chest pain diaphoresis aspirin",
-      "correlation_id": "bounded-action",
+      "correlation_id": "capacity-bed-available",
       "flow": [
         "nose",
         "left_eye",
@@ -550,12 +550,12 @@
           "right_eye_is_advisory": true,
           "er_state": {
             "available_beds": 1,
-            "occupancy_pct": 96,
-            "queue_length": 8
+            "occupancy_pct": 80,
+            "queue_length": 2
           }
         },
         "disposition": "assign_bed",
-        "task_id": "task:bounded-action:assign_bed",
+        "task_id": "task:capacity-bed-available:assign_bed",
         "receiver": "bed_ops_worker",
         "receiver_acknowledged": true,
         "hands_executed": true,
@@ -587,6 +587,212 @@
         "mouth": "Patient evidence supports NOW; the cross-domain safety check did not block the bounded Bed Ops action assign_bed."
       },
       "verdict": "closed-loop simulation proven"
+    },
+    "capacity_gridlock": {
+      "audit_version": "baymax.v1",
+      "query": "62yo male chest pain diaphoresis aspirin",
+      "correlation_id": "capacity-gridlock",
+      "flow": [
+        "nose",
+        "left_eye",
+        "right_eye",
+        "brain",
+        "brakes",
+        "nerves",
+        "hands",
+        "outcome_check"
+      ],
+      "nose": {
+        "executed_before_eyes": true,
+        "route_to_eyes": true,
+        "reason": "safety terms fired: ['chest pain', 'diaphoresis']",
+        "batch_signals_proven": [
+          "anomaly",
+          "cluster",
+          "classify",
+          "rank",
+          "retrieval"
+        ],
+        "per_case_method": "cheap safety-term gate",
+        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "batch_n": 5000,
+        "batch_llm_call_reduction_pct": 30,
+        "batch_serious_recall": 0.954
+      },
+      "left_eye": {
+        "source": "synthetic patient encounters",
+        "source_commit": "cfdc2b21751f9d3ac21163622b49cbd7f44549d7",
+        "source_artifact": "sources/healthcare-ai-data-engineer/data/raw/healthcare_dataset.csv",
+        "rows_scanned": 55500,
+        "reconciliation": {
+          "raw_rows": 55500,
+          "exact_dupes_removed": 5500,
+          "encounters_staging": 50000,
+          "canonical_patients_dim": 40235,
+          "resolver_artifact_patients": 40235
+        },
+        "hits": [
+          {
+            "source_id": "encounter:9",
+            "score": 2,
+            "condition": "Asthma",
+            "medication": "Aspirin",
+            "admission_type": "Elective"
+          },
+          {
+            "source_id": "encounter:26",
+            "score": 2,
+            "condition": "Obesity",
+            "medication": "Aspirin",
+            "admission_type": "Urgent"
+          },
+          {
+            "source_id": "encounter:42",
+            "score": 2,
+            "condition": "Hypertension",
+            "medication": "Aspirin",
+            "admission_type": "Urgent"
+          },
+          {
+            "source_id": "encounter:48",
+            "score": 2,
+            "condition": "Diabetes",
+            "medication": "Aspirin",
+            "admission_type": "Urgent"
+          },
+          {
+            "source_id": "encounter:63",
+            "score": 2,
+            "condition": "Cancer",
+            "medication": "Aspirin",
+            "admission_type": "Emergency"
+          }
+        ]
+      },
+      "right_eye": {
+        "source": "real openFDA FAERS adverse-event reports",
+        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/data/openfda_reports_scaled.json",
+        "reports_scanned": 5000,
+        "semantic_layer_commit": "d51192c7e18abf151ac5df1935e78f854f072b7b",
+        "semantic_layer_artifact": "sources/healthcare-da/proof/reconcile_gcp_fabric.json",
+        "semantic_layer_n": 3000,
+        "drug_safety_signal": {
+          "exact_drug_reports": 4,
+          "exact_drug_serious_reports": 4,
+          "exact_drug_serious_rate": 1.0,
+          "interpretation": "population safety signal only; does not prove causality or a drug interaction"
+        },
+        "hits": [
+          {
+            "source_id": "openfda:23355587",
+            "score": 4,
+            "primary_drug": "ASPIRIN",
+            "is_serious": true,
+            "reactions_preview": "Abdominal pain upper; Adrenal insufficiency; Alanine aminotransferase increased; Anaphylactic reaction; Arthralgia; Aspartate aminotransferase abnormal; Back pain; Balance disorder; Blood alkaline phosphatase increased; Blood creatinine inc"
+          },
+          {
+            "source_id": "openfda:23353876",
+            "score": 3,
+            "primary_drug": "ICY HOT PAIN RELIEVING CREAM",
+            "is_serious": false,
+            "reactions_preview": "No adverse event; Drug ineffective"
+          },
+          {
+            "source_id": "openfda:23354942",
+            "score": 3,
+            "primary_drug": "ASPIRIN",
+            "is_serious": true,
+            "reactions_preview": "Diaphragmatic hernia; Tachycardia; Gastric ulcer; Haemorrhage; Diarrhoea haemorrhagic; Thyroid hormones decreased; Haemoglobin abnormal"
+          },
+          {
+            "source_id": "openfda:23355187",
+            "score": 3,
+            "primary_drug": "ACETAMINOPHEN\\ASPIRIN\\CAFFEINE",
+            "is_serious": true,
+            "reactions_preview": "Drug dependence"
+          },
+          {
+            "source_id": "openfda:23355188",
+            "score": 3,
+            "primary_drug": "ACETAMINOPHEN\\ASPIRIN\\CAFFEINE",
+            "is_serious": true,
+            "reactions_preview": "Drug dependence"
+          }
+        ]
+      },
+      "brain_hands": {
+        "source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "preliminary_patient_only_decision": {
+          "triage_level": "NOW",
+          "autonomous_action_candidate": true
+        },
+        "cross_domain_decision_change": {
+          "changed": false,
+          "from": "bounded autonomous action",
+          "to": "bounded autonomous action",
+          "evidence": {
+            "exact_drug_reports": 4,
+            "exact_drug_serious_reports": 4,
+            "exact_drug_serious_rate": 1.0,
+            "interpretation": "population safety signal only; does not prove causality or a drug interaction"
+          }
+        },
+        "final_triage_level": "NOW",
+        "red_flags": [
+          "high_risk_keyword:chest pain",
+          "high_risk_keyword:diaphoresis"
+        ],
+        "brakes": {
+          "autonomous_action_allowed": true,
+          "human_review_required": false,
+          "reason": "No cross-domain safety signal strong enough to block the bounded action path.",
+          "rule": "non-NOW + >=3 exact-drug reports + >=80% serious -> human review"
+        },
+        "decision_basis": {
+          "left_eye_hits": 5,
+          "right_eye_hits": 5,
+          "right_eye_is_advisory": true,
+          "er_state": {
+            "available_beds": 0,
+            "occupancy_pct": 98,
+            "queue_length": 12
+          }
+        },
+        "disposition": "divert",
+        "task_id": "task:capacity-gridlock:divert",
+        "receiver": "bed_ops_worker",
+        "receiver_acknowledged": true,
+        "hands_executed": true,
+        "action_status": "committed",
+        "before_state": {
+          "committed": false,
+          "disposition": null,
+          "action_seq": null
+        },
+        "after_state": {
+          "committed": true,
+          "disposition": "divert",
+          "action_seq": 1
+        },
+        "tool_receipt": {
+          "detail": "committed disposition divert (seq 1)",
+          "applied": true
+        },
+        "outcome_verified": true,
+        "false_success_detected": false,
+        "trace_stages": [
+          "intake_accepted",
+          "decided",
+          "task_created",
+          "task_acknowledged",
+          "action_succeeded",
+          "outcome_verified"
+        ],
+        "mouth": "Patient evidence supports NOW; the cross-domain safety check did not block the bounded Bed Ops action divert."
+      },
+      "verdict": "closed-loop simulation proven"
     }
   },
   "immune_proof": {
@@ -595,6 +801,13 @@
     "cross_domain_disposition": "human_review",
     "behavior_changed": true,
     "protected_in_ci": "tests/test_audit.py::test_cross_domain_eye_changes_action_policy"
+  },
+  "decision_flip_proof": {
+    "same_case": "62yo male chest pain diaphoresis aspirin",
+    "bed_available_disposition": "assign_bed",
+    "gridlock_disposition": "divert",
+    "action_changed": true,
+    "protected_in_ci": "tests/test_audit.py::test_capacity_domain_changes_action"
   },
   "organ_report": {
     "nose": "routes cheap cases before expensive evidence work",
@@ -675,7 +888,7 @@
     },
     {
       "moment": "When brakes allow action, durable state changes and Baymax re-reads the outcome",
-      "proof": "trajectories.bounded_action.brain_hands"
+      "proof": "trajectories.capacity_bed_available.brain_hands"
     }
   ]
 }

@@ -55,6 +55,27 @@ def test_cross_domain_eye_changes_action_policy(tmp_path):
     assert "does not prove causality" in cross_domain["brain_hands"]["mouth"]
 
 
+def test_capacity_domain_changes_action(tmp_path):
+    query = "62yo male chest pain diaphoresis aspirin"
+    bed_available = run_case(
+        query,
+        correlation_id="capacity-bed",
+        er_state={"available_beds": 1, "occupancy_pct": 80, "queue_length": 2},
+        db_path=tmp_path / "bed.db",
+    )
+    gridlock = run_case(
+        query,
+        correlation_id="capacity-gridlock",
+        er_state={"available_beds": 0, "occupancy_pct": 98, "queue_length": 12},
+        db_path=tmp_path / "gridlock.db",
+    )
+    assert bed_available["brain_hands"]["disposition"] == "assign_bed"
+    assert gridlock["brain_hands"]["disposition"] == "divert"
+    assert bed_available["brain_hands"]["outcome_verified"] is True
+    assert gridlock["brain_hands"]["outcome_verified"] is True
+
+
 def test_immune_suite_pins_counterfactual_behavior():
     suite = run_audit_suite()
     assert suite["immune_proof"]["behavior_changed"] is True
+    assert suite["decision_flip_proof"]["action_changed"] is True

@@ -8,6 +8,12 @@ Give a recruiter one repository and one command that proves the Baymax flow:
 
 `nose -> two eyes -> decision change -> brakes -> nerves/hands -> verification`
 
+The presentation is a three-case movie, not an organ museum:
+
+- Attention Flip
+- Decision Flip
+- Brake Save
+
 ## Source Repositories
 
 - Left eye: `healthcare-ai-data-engineer` — 55,500 synthetic encounters.
@@ -31,6 +37,7 @@ Give a recruiter one repository and one command that proves the Baymax flow:
 - [x] Outcome verifier re-reads durable state.
 - [x] Immune tests defend skip, decision-change, and full closed-loop paths.
 - [x] CI regenerates one recruiter-readable audit receipt.
+- [x] `make demo` plays three memorable cases without opening sibling repos.
 
 ## Proof Boundary
 

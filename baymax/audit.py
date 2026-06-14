@@ -424,7 +424,8 @@ def run_audit_suite() -> dict[str, Any]:
     paths = {
         "patient_only": OUTPUTS / "patient_only.db",
         "cross_domain": OUTPUTS / "cross_domain.db",
-        "action": OUTPUTS / "action.db",
+        "capacity_bed": OUTPUTS / "capacity_bed.db",
+        "capacity_gridlock": OUTPUTS / "capacity_gridlock.db",
     }
     for path in paths.values():
         if path.exists():
@@ -448,10 +449,17 @@ def run_audit_suite() -> dict[str, Any]:
         er_state={"available_beds": 0, "occupancy_pct": 80, "queue_length": 2},
         db_path=paths["cross_domain"],
     )
-    action = run_case(
+    capacity_bed = run_case(
         "62yo male chest pain diaphoresis aspirin",
-        correlation_id="bounded-action",
-        db_path=paths["action"],
+        correlation_id="capacity-bed-available",
+        er_state={"available_beds": 1, "occupancy_pct": 80, "queue_length": 2},
+        db_path=paths["capacity_bed"],
+    )
+    capacity_gridlock = run_case(
+        "62yo male chest pain diaphoresis aspirin",
+        correlation_id="capacity-gridlock",
+        er_state={"available_beds": 0, "occupancy_pct": 98, "queue_length": 12},
+        db_path=paths["capacity_gridlock"],
     )
     return {
         "audit_version": "baymax.v2",
@@ -463,7 +471,8 @@ def run_audit_suite() -> dict[str, Any]:
             "attention_skip": skipped,
             "patient_only_counterfactual": patient_only,
             "cross_domain_brake": cross_domain,
-            "bounded_action": action,
+            "capacity_bed_available": capacity_bed,
+            "capacity_gridlock": capacity_gridlock,
         },
         "immune_proof": {
             "same_case": "abdominal pain after ibuprofen",
@@ -475,6 +484,16 @@ def run_audit_suite() -> dict[str, Any]:
                 and not cross_domain["brain_hands"]["hands_executed"]
             ),
             "protected_in_ci": "tests/test_audit.py::test_cross_domain_eye_changes_action_policy",
+        },
+        "decision_flip_proof": {
+            "same_case": "62yo male chest pain diaphoresis aspirin",
+            "bed_available_disposition": capacity_bed["brain_hands"]["disposition"],
+            "gridlock_disposition": capacity_gridlock["brain_hands"]["disposition"],
+            "action_changed": (
+                capacity_bed["brain_hands"]["disposition"]
+                != capacity_gridlock["brain_hands"]["disposition"]
+            ),
+            "protected_in_ci": "tests/test_audit.py::test_capacity_domain_changes_action",
         },
         "organ_report": {
             "nose": "routes cheap cases before expensive evidence work",
@@ -555,7 +574,7 @@ def run_audit_suite() -> dict[str, Any]:
             },
             {
                 "moment": "When brakes allow action, durable state changes and Baymax re-reads the outcome",
-                "proof": "trajectories.bounded_action.brain_hands",
+                "proof": "trajectories.capacity_bed_available.brain_hands",
             },
         ],
     }
