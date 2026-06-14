@@ -1,174 +1,681 @@
 {
-  "audit_version": "baymax.v1",
-  "query": "62yo male chest pain diaphoresis aspirin",
-  "correlation_id": "baymax-audit-case",
-  "flow": [
-    "nose",
-    "left_eye",
-    "right_eye",
-    "brain",
-    "hands",
-    "outcome_check"
-  ],
-  "nose": {
-    "executed_before_eyes": true,
-    "route_to_eyes": true,
-    "reason": "safety terms fired: ['chest pain', 'diaphoresis']",
-    "batch_signals_proven": [
-      "anomaly",
-      "cluster",
-      "classify",
-      "rank",
-      "retrieval"
-    ],
-    "per_case_method": "cheap safety-term gate",
-    "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
-    "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
-    "batch_n": 5000,
-    "batch_llm_call_reduction_pct": 30,
-    "batch_serious_recall": 0.954
-  },
-  "left_eye": {
-    "source": "synthetic patient encounters",
-    "source_commit": "cfdc2b21751f9d3ac21163622b49cbd7f44549d7",
-    "source_artifact": "sources/healthcare-ai-data-engineer/data/raw/healthcare_dataset.csv",
-    "rows_scanned": 55500,
-    "reconciliation": {
-      "raw_rows": 55500,
-      "exact_dupes_removed": 5500,
-      "encounters_staging": 50000,
-      "canonical_patients_dim": 40235,
-      "resolver_artifact_patients": 40235
+  "audit_version": "baymax.v2",
+  "one_line_truth": "Baymax allocates attention, changes action policy when another domain adds risk, and verifies bounded actions when brakes allow them.",
+  "trajectories": {
+    "attention_skip": {
+      "audit_version": "baymax.v1",
+      "query": "routine medication refill",
+      "correlation_id": "attention-skip",
+      "flow": [
+        "nose"
+      ],
+      "nose": {
+        "executed_before_eyes": true,
+        "route_to_eyes": false,
+        "reason": "no cheap safety term fired; expensive eyes skipped",
+        "batch_signals_proven": [
+          "anomaly",
+          "cluster",
+          "classify",
+          "rank",
+          "retrieval"
+        ],
+        "per_case_method": "cheap safety-term gate",
+        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "batch_n": 5000,
+        "batch_llm_call_reduction_pct": 30,
+        "batch_serious_recall": 0.954
+      },
+      "verdict": "cheap path stopped before eyes; no action attempted"
     },
-    "hits": [
-      {
-        "source_id": "encounter:9",
-        "score": 2,
-        "condition": "Asthma",
-        "medication": "Aspirin",
-        "admission_type": "Elective"
+    "patient_only_counterfactual": {
+      "audit_version": "baymax.v1",
+      "query": "abdominal pain after ibuprofen",
+      "correlation_id": "patient-only",
+      "flow": [
+        "nose",
+        "left_eye",
+        "right_eye_disabled",
+        "brain",
+        "brakes",
+        "nerves",
+        "hands",
+        "outcome_check"
+      ],
+      "nose": {
+        "executed_before_eyes": true,
+        "route_to_eyes": true,
+        "reason": "safety terms fired: ['abdominal pain']",
+        "batch_signals_proven": [
+          "anomaly",
+          "cluster",
+          "classify",
+          "rank",
+          "retrieval"
+        ],
+        "per_case_method": "cheap safety-term gate",
+        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "batch_n": 5000,
+        "batch_llm_call_reduction_pct": 30,
+        "batch_serious_recall": 0.954
       },
-      {
-        "source_id": "encounter:26",
-        "score": 2,
-        "condition": "Obesity",
-        "medication": "Aspirin",
-        "admission_type": "Urgent"
+      "left_eye": {
+        "source": "synthetic patient encounters",
+        "source_commit": "cfdc2b21751f9d3ac21163622b49cbd7f44549d7",
+        "source_artifact": "sources/healthcare-ai-data-engineer/data/raw/healthcare_dataset.csv",
+        "rows_scanned": 55500,
+        "reconciliation": {
+          "raw_rows": 55500,
+          "exact_dupes_removed": 5500,
+          "encounters_staging": 50000,
+          "canonical_patients_dim": 40235,
+          "resolver_artifact_patients": 40235
+        },
+        "hits": [
+          {
+            "source_id": "encounter:2",
+            "score": 1,
+            "condition": "Obesity",
+            "medication": "Ibuprofen",
+            "admission_type": "Emergency"
+          },
+          {
+            "source_id": "encounter:4",
+            "score": 1,
+            "condition": "Diabetes",
+            "medication": "Ibuprofen",
+            "admission_type": "Elective"
+          },
+          {
+            "source_id": "encounter:6",
+            "score": 1,
+            "condition": "Asthma",
+            "medication": "Ibuprofen",
+            "admission_type": "Urgent"
+          },
+          {
+            "source_id": "encounter:27",
+            "score": 1,
+            "condition": "Asthma",
+            "medication": "Ibuprofen",
+            "admission_type": "Elective"
+          },
+          {
+            "source_id": "encounter:31",
+            "score": 1,
+            "condition": "Asthma",
+            "medication": "Ibuprofen",
+            "admission_type": "Urgent"
+          }
+        ]
       },
-      {
-        "source_id": "encounter:42",
-        "score": 2,
-        "condition": "Hypertension",
-        "medication": "Aspirin",
-        "admission_type": "Urgent"
+      "right_eye": {
+        "source": "right eye intentionally disabled for counterfactual",
+        "hits": [],
+        "drug_safety_signal": {
+          "exact_drug_reports": 0,
+          "exact_drug_serious_reports": 0,
+          "exact_drug_serious_rate": null,
+          "interpretation": "counterfactual: no cross-domain evidence supplied"
+        }
       },
-      {
-        "source_id": "encounter:48",
-        "score": 2,
-        "condition": "Diabetes",
-        "medication": "Aspirin",
-        "admission_type": "Urgent"
+      "brain_hands": {
+        "source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "preliminary_patient_only_decision": {
+          "triage_level": "SOON",
+          "autonomous_action_candidate": true
+        },
+        "cross_domain_decision_change": {
+          "changed": false,
+          "from": "bounded autonomous action",
+          "to": "bounded autonomous action",
+          "evidence": {
+            "exact_drug_reports": 0,
+            "exact_drug_serious_reports": 0,
+            "exact_drug_serious_rate": null,
+            "interpretation": "counterfactual: no cross-domain evidence supplied"
+          }
+        },
+        "final_triage_level": "SOON",
+        "red_flags": [
+          "moderate_keyword:abdominal pain"
+        ],
+        "brakes": {
+          "autonomous_action_allowed": true,
+          "human_review_required": false,
+          "reason": "No cross-domain safety signal strong enough to block the bounded action path.",
+          "rule": "non-NOW + >=3 exact-drug reports + >=80% serious -> human review"
+        },
+        "decision_basis": {
+          "left_eye_hits": 5,
+          "right_eye_hits": 0,
+          "right_eye_is_advisory": true,
+          "er_state": {
+            "available_beds": 0,
+            "occupancy_pct": 80,
+            "queue_length": 2
+          }
+        },
+        "disposition": "discharge_plan",
+        "task_id": "task:patient-only:discharge_plan",
+        "receiver": "bed_ops_worker",
+        "receiver_acknowledged": true,
+        "hands_executed": true,
+        "action_status": "committed",
+        "before_state": {
+          "committed": false,
+          "disposition": null,
+          "action_seq": null
+        },
+        "after_state": {
+          "committed": true,
+          "disposition": "discharge_plan",
+          "action_seq": 1
+        },
+        "tool_receipt": {
+          "detail": "committed disposition discharge_plan (seq 1)",
+          "applied": true
+        },
+        "outcome_verified": true,
+        "false_success_detected": false,
+        "trace_stages": [
+          "intake_accepted",
+          "decided",
+          "task_created",
+          "task_acknowledged",
+          "action_succeeded",
+          "outcome_verified"
+        ],
+        "mouth": "Patient evidence supports SOON; the cross-domain safety check did not block the bounded Bed Ops action discharge_plan."
       },
-      {
-        "source_id": "encounter:63",
-        "score": 2,
-        "condition": "Cancer",
-        "medication": "Aspirin",
-        "admission_type": "Emergency"
+      "verdict": "closed-loop simulation proven"
+    },
+    "cross_domain_brake": {
+      "audit_version": "baymax.v1",
+      "query": "abdominal pain after ibuprofen",
+      "correlation_id": "cross-domain",
+      "flow": [
+        "nose",
+        "left_eye",
+        "right_eye",
+        "brain",
+        "brakes",
+        "nerves",
+        "hands_blocked",
+        "human_review_ack"
+      ],
+      "nose": {
+        "executed_before_eyes": true,
+        "route_to_eyes": true,
+        "reason": "safety terms fired: ['abdominal pain']",
+        "batch_signals_proven": [
+          "anomaly",
+          "cluster",
+          "classify",
+          "rank",
+          "retrieval"
+        ],
+        "per_case_method": "cheap safety-term gate",
+        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "batch_n": 5000,
+        "batch_llm_call_reduction_pct": 30,
+        "batch_serious_recall": 0.954
+      },
+      "left_eye": {
+        "source": "synthetic patient encounters",
+        "source_commit": "cfdc2b21751f9d3ac21163622b49cbd7f44549d7",
+        "source_artifact": "sources/healthcare-ai-data-engineer/data/raw/healthcare_dataset.csv",
+        "rows_scanned": 55500,
+        "reconciliation": {
+          "raw_rows": 55500,
+          "exact_dupes_removed": 5500,
+          "encounters_staging": 50000,
+          "canonical_patients_dim": 40235,
+          "resolver_artifact_patients": 40235
+        },
+        "hits": [
+          {
+            "source_id": "encounter:2",
+            "score": 1,
+            "condition": "Obesity",
+            "medication": "Ibuprofen",
+            "admission_type": "Emergency"
+          },
+          {
+            "source_id": "encounter:4",
+            "score": 1,
+            "condition": "Diabetes",
+            "medication": "Ibuprofen",
+            "admission_type": "Elective"
+          },
+          {
+            "source_id": "encounter:6",
+            "score": 1,
+            "condition": "Asthma",
+            "medication": "Ibuprofen",
+            "admission_type": "Urgent"
+          },
+          {
+            "source_id": "encounter:27",
+            "score": 1,
+            "condition": "Asthma",
+            "medication": "Ibuprofen",
+            "admission_type": "Elective"
+          },
+          {
+            "source_id": "encounter:31",
+            "score": 1,
+            "condition": "Asthma",
+            "medication": "Ibuprofen",
+            "admission_type": "Urgent"
+          }
+        ]
+      },
+      "right_eye": {
+        "source": "real openFDA FAERS adverse-event reports",
+        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/data/openfda_reports_scaled.json",
+        "reports_scanned": 5000,
+        "semantic_layer_commit": "d51192c7e18abf151ac5df1935e78f854f072b7b",
+        "semantic_layer_artifact": "sources/healthcare-da/proof/reconcile_gcp_fabric.json",
+        "semantic_layer_n": 3000,
+        "drug_safety_signal": {
+          "exact_drug_reports": 17,
+          "exact_drug_serious_reports": 16,
+          "exact_drug_serious_rate": 0.941,
+          "interpretation": "population safety signal only; does not prove causality or a drug interaction"
+        },
+        "hits": [
+          {
+            "source_id": "openfda:23353876",
+            "score": 3,
+            "primary_drug": "ICY HOT PAIN RELIEVING CREAM",
+            "is_serious": false,
+            "reactions_preview": "No adverse event; Drug ineffective"
+          },
+          {
+            "source_id": "openfda:23354228",
+            "score": 3,
+            "primary_drug": "IBUPROFEN",
+            "is_serious": true,
+            "reactions_preview": "Suicide attempt; Intentional overdose"
+          },
+          {
+            "source_id": "openfda:23355160",
+            "score": 3,
+            "primary_drug": "IBUPROFEN",
+            "is_serious": true,
+            "reactions_preview": "NSAID exacerbated respiratory disease"
+          },
+          {
+            "source_id": "openfda:23355190",
+            "score": 3,
+            "primary_drug": "IBUPROFEN",
+            "is_serious": true,
+            "reactions_preview": "Drug-induced liver injury; Hepatocellular injury"
+          },
+          {
+            "source_id": "openfda:23355231",
+            "score": 3,
+            "primary_drug": "IBUPROFEN",
+            "is_serious": true,
+            "reactions_preview": "Autoimmune hepatitis; Drug-induced liver injury; Blood bilirubin increased"
+          }
+        ]
+      },
+      "brain_hands": {
+        "source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "preliminary_patient_only_decision": {
+          "triage_level": "SOON",
+          "autonomous_action_candidate": true
+        },
+        "cross_domain_decision_change": {
+          "changed": true,
+          "from": "bounded autonomous action",
+          "to": "human review before action",
+          "evidence": {
+            "exact_drug_reports": 17,
+            "exact_drug_serious_reports": 16,
+            "exact_drug_serious_rate": 0.941,
+            "interpretation": "population safety signal only; does not prove causality or a drug interaction"
+          }
+        },
+        "final_triage_level": "SOON",
+        "red_flags": [
+          "moderate_keyword:abdominal pain"
+        ],
+        "brakes": {
+          "autonomous_action_allowed": false,
+          "human_review_required": true,
+          "reason": "Cross-domain drug-safety signal adds material uncertainty; block autonomous disposition and request clinician review.",
+          "rule": "non-NOW + >=3 exact-drug reports + >=80% serious -> human review"
+        },
+        "decision_basis": {
+          "left_eye_hits": 5,
+          "right_eye_hits": 5,
+          "right_eye_is_advisory": true,
+          "er_state": {
+            "available_beds": 0,
+            "occupancy_pct": 80,
+            "queue_length": 2
+          }
+        },
+        "disposition": "human_review",
+        "task_id": "task:cross-domain:cross_domain_review",
+        "receiver": "clinician_review_queue",
+        "receiver_acknowledged": true,
+        "hands_executed": false,
+        "action_status": null,
+        "before_state": null,
+        "after_state": null,
+        "tool_receipt": {},
+        "outcome_verified": false,
+        "false_success_detected": false,
+        "trace_stages": [
+          "cross_domain_brake_applied",
+          "task_acknowledged"
+        ],
+        "mouth": "Patient evidence alone suggested SOON. The drug-safety eye found 16/17 exact-drug reports marked serious. That population signal does not prove causality, so Baymax did not change clinical triage or act autonomously; it requested human review."
+      },
+      "verdict": "cross-domain brake and human handoff proven"
+    },
+    "bounded_action": {
+      "audit_version": "baymax.v1",
+      "query": "62yo male chest pain diaphoresis aspirin",
+      "correlation_id": "bounded-action",
+      "flow": [
+        "nose",
+        "left_eye",
+        "right_eye",
+        "brain",
+        "brakes",
+        "nerves",
+        "hands",
+        "outcome_check"
+      ],
+      "nose": {
+        "executed_before_eyes": true,
+        "route_to_eyes": true,
+        "reason": "safety terms fired: ['chest pain', 'diaphoresis']",
+        "batch_signals_proven": [
+          "anomaly",
+          "cluster",
+          "classify",
+          "rank",
+          "retrieval"
+        ],
+        "per_case_method": "cheap safety-term gate",
+        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "batch_n": 5000,
+        "batch_llm_call_reduction_pct": 30,
+        "batch_serious_recall": 0.954
+      },
+      "left_eye": {
+        "source": "synthetic patient encounters",
+        "source_commit": "cfdc2b21751f9d3ac21163622b49cbd7f44549d7",
+        "source_artifact": "sources/healthcare-ai-data-engineer/data/raw/healthcare_dataset.csv",
+        "rows_scanned": 55500,
+        "reconciliation": {
+          "raw_rows": 55500,
+          "exact_dupes_removed": 5500,
+          "encounters_staging": 50000,
+          "canonical_patients_dim": 40235,
+          "resolver_artifact_patients": 40235
+        },
+        "hits": [
+          {
+            "source_id": "encounter:9",
+            "score": 2,
+            "condition": "Asthma",
+            "medication": "Aspirin",
+            "admission_type": "Elective"
+          },
+          {
+            "source_id": "encounter:26",
+            "score": 2,
+            "condition": "Obesity",
+            "medication": "Aspirin",
+            "admission_type": "Urgent"
+          },
+          {
+            "source_id": "encounter:42",
+            "score": 2,
+            "condition": "Hypertension",
+            "medication": "Aspirin",
+            "admission_type": "Urgent"
+          },
+          {
+            "source_id": "encounter:48",
+            "score": 2,
+            "condition": "Diabetes",
+            "medication": "Aspirin",
+            "admission_type": "Urgent"
+          },
+          {
+            "source_id": "encounter:63",
+            "score": 2,
+            "condition": "Cancer",
+            "medication": "Aspirin",
+            "admission_type": "Emergency"
+          }
+        ]
+      },
+      "right_eye": {
+        "source": "real openFDA FAERS adverse-event reports",
+        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/data/openfda_reports_scaled.json",
+        "reports_scanned": 5000,
+        "semantic_layer_commit": "d51192c7e18abf151ac5df1935e78f854f072b7b",
+        "semantic_layer_artifact": "sources/healthcare-da/proof/reconcile_gcp_fabric.json",
+        "semantic_layer_n": 3000,
+        "drug_safety_signal": {
+          "exact_drug_reports": 4,
+          "exact_drug_serious_reports": 4,
+          "exact_drug_serious_rate": 1.0,
+          "interpretation": "population safety signal only; does not prove causality or a drug interaction"
+        },
+        "hits": [
+          {
+            "source_id": "openfda:23355587",
+            "score": 4,
+            "primary_drug": "ASPIRIN",
+            "is_serious": true,
+            "reactions_preview": "Abdominal pain upper; Adrenal insufficiency; Alanine aminotransferase increased; Anaphylactic reaction; Arthralgia; Aspartate aminotransferase abnormal; Back pain; Balance disorder; Blood alkaline phosphatase increased; Blood creatinine inc"
+          },
+          {
+            "source_id": "openfda:23353876",
+            "score": 3,
+            "primary_drug": "ICY HOT PAIN RELIEVING CREAM",
+            "is_serious": false,
+            "reactions_preview": "No adverse event; Drug ineffective"
+          },
+          {
+            "source_id": "openfda:23354942",
+            "score": 3,
+            "primary_drug": "ASPIRIN",
+            "is_serious": true,
+            "reactions_preview": "Diaphragmatic hernia; Tachycardia; Gastric ulcer; Haemorrhage; Diarrhoea haemorrhagic; Thyroid hormones decreased; Haemoglobin abnormal"
+          },
+          {
+            "source_id": "openfda:23355187",
+            "score": 3,
+            "primary_drug": "ACETAMINOPHEN\\ASPIRIN\\CAFFEINE",
+            "is_serious": true,
+            "reactions_preview": "Drug dependence"
+          },
+          {
+            "source_id": "openfda:23355188",
+            "score": 3,
+            "primary_drug": "ACETAMINOPHEN\\ASPIRIN\\CAFFEINE",
+            "is_serious": true,
+            "reactions_preview": "Drug dependence"
+          }
+        ]
+      },
+      "brain_hands": {
+        "source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "preliminary_patient_only_decision": {
+          "triage_level": "NOW",
+          "autonomous_action_candidate": true
+        },
+        "cross_domain_decision_change": {
+          "changed": false,
+          "from": "bounded autonomous action",
+          "to": "bounded autonomous action",
+          "evidence": {
+            "exact_drug_reports": 4,
+            "exact_drug_serious_reports": 4,
+            "exact_drug_serious_rate": 1.0,
+            "interpretation": "population safety signal only; does not prove causality or a drug interaction"
+          }
+        },
+        "final_triage_level": "NOW",
+        "red_flags": [
+          "high_risk_keyword:chest pain",
+          "high_risk_keyword:diaphoresis"
+        ],
+        "brakes": {
+          "autonomous_action_allowed": true,
+          "human_review_required": false,
+          "reason": "No cross-domain safety signal strong enough to block the bounded action path.",
+          "rule": "non-NOW + >=3 exact-drug reports + >=80% serious -> human review"
+        },
+        "decision_basis": {
+          "left_eye_hits": 5,
+          "right_eye_hits": 5,
+          "right_eye_is_advisory": true,
+          "er_state": {
+            "available_beds": 1,
+            "occupancy_pct": 96,
+            "queue_length": 8
+          }
+        },
+        "disposition": "assign_bed",
+        "task_id": "task:bounded-action:assign_bed",
+        "receiver": "bed_ops_worker",
+        "receiver_acknowledged": true,
+        "hands_executed": true,
+        "action_status": "committed",
+        "before_state": {
+          "committed": false,
+          "disposition": null,
+          "action_seq": null
+        },
+        "after_state": {
+          "committed": true,
+          "disposition": "assign_bed",
+          "action_seq": 1
+        },
+        "tool_receipt": {
+          "detail": "committed disposition assign_bed (seq 1)",
+          "applied": true
+        },
+        "outcome_verified": true,
+        "false_success_detected": false,
+        "trace_stages": [
+          "intake_accepted",
+          "decided",
+          "task_created",
+          "task_acknowledged",
+          "action_succeeded",
+          "outcome_verified"
+        ],
+        "mouth": "Patient evidence supports NOW; the cross-domain safety check did not block the bounded Bed Ops action assign_bed."
+      },
+      "verdict": "closed-loop simulation proven"
+    }
+  },
+  "immune_proof": {
+    "same_case": "abdominal pain after ibuprofen",
+    "patient_only_disposition": "discharge_plan",
+    "cross_domain_disposition": "human_review",
+    "behavior_changed": true,
+    "protected_in_ci": "tests/test_audit.py::test_cross_domain_eye_changes_action_policy"
+  },
+  "organ_report": {
+    "nose": "routes cheap cases before expensive evidence work",
+    "eyes": "combine patient precedents with real population drug-safety evidence",
+    "brain": "records patient-only and cross-domain final decisions separately",
+    "mouth": "explains why Baymax acted or stopped without overstating causality",
+    "hands": "commits bounded actions to durable state",
+    "nerves": "hands work to Bed Ops or clinician review and records receiver ACK",
+    "brakes": "blocks autonomous action when cross-domain evidence adds uncertainty",
+    "immune": "counterfactual trajectory is pinned in CI so the behavior cannot silently regress"
+  },
+  "dream_state_audit": {
+    "target": "maximum controllable achievement for a solo Applied AI Engineer",
+    "organs": {
+      "nose": {
+        "grade": "B",
+        "current": "cheap per-case gate plus five-signal batch proof",
+        "a_plus": "serve the evaluated ranker online and measure avoided reasoning calls per trajectory"
+      },
+      "eyes": {
+        "grade": "A-",
+        "current": "patient and real drug-safety evidence with source commit lineage",
+        "a_plus": "stronger retrieval evals and explicit contradiction/novelty scoring across domains"
+      },
+      "brain": {
+        "grade": "A-",
+        "current": "records a patient-only decision and a cross-domain guarded decision",
+        "a_plus": "evaluate decision-change quality across a larger independent counterfactual set"
+      },
+      "mouth": {
+        "grade": "B+",
+        "current": "explains why Baymax acted or stopped and states the FAERS causality boundary",
+        "a_plus": "citation-linked human explanations scored for completeness and unsupported claims"
+      },
+      "hands": {
+        "grade": "A",
+        "current": "idempotent durable action with before/after receipt and outcome re-read",
+        "a_plus": "add a second independently implemented tool target while preserving the same contract"
+      },
+      "nerves": {
+        "grade": "B+",
+        "current": "durable Bed Ops or clinician-review handoff with receiver ACK",
+        "a_plus": "prove timeout, retry, dead-letter, and recovery across separate local services"
+      },
+      "brakes": {
+        "grade": "A-",
+        "current": "cross-domain uncertainty blocks autonomous action without inventing causality",
+        "a_plus": "policy matrix covering stale, conflicting, missing, and adversarial evidence"
+      },
+      "immune": {
+        "grade": "A-",
+        "current": "counterfactual decision-change trajectory pinned in CI",
+        "a_plus": "trajectory regression suite spanning all organs and known failure families"
       }
+    },
+    "smallest_path_to_complete": [
+      "serve the evaluated NOSE ranker on each case instead of only linking its batch proof",
+      "add 20-50 independent cross-domain counterfactual scenarios",
+      "run Nerves across separate local services with timeout and dead-letter recovery"
     ]
   },
-  "right_eye": {
-    "source": "real openFDA FAERS adverse-event reports",
-    "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
-    "source_artifact": "sources/healthcare-signal-platform/openfda_signals/data/openfda_reports_scaled.json",
-    "reports_scanned": 5000,
-    "semantic_layer_commit": "d51192c7e18abf151ac5df1935e78f854f072b7b",
-    "semantic_layer_artifact": "sources/healthcare-da/proof/reconcile_gcp_fabric.json",
-    "semantic_layer_n": 3000,
-    "hits": [
-      {
-        "source_id": "openfda:23355587",
-        "score": 4,
-        "primary_drug": "ASPIRIN",
-        "is_serious": true,
-        "reactions": "Abdominal pain upper; Adrenal insufficiency; Alanine aminotransferase increased; Anaphylactic reaction; Arthralgia; Aspartate aminotransferase abnormal; Back pain; Balance disorder; Blood alkaline phosphatase increased; Blood creatinine increased; Blood glucose decreased; Blood immunoglobulin A increased; Blood pressure diastolic decreased; Blood pressure fluctuation; Blood pressure systolic decreased; Blood test abnormal; Blood urea increased; Blood uric acid increased; Bronchitis; C-reactive protein increased; Cholecystitis acute; Cognitive disorder; Coordination abnormal; Cough; Dactylitis; Demyelination; Depressed mood; Depression; Diarrhoea; Dizziness; Drug hypersensitivity; Drug ineffective; Dry eye; Dry mouth; Dysphagia; Dyspnoea; Electric shock; Fall; Fatigue; Glomerular filtration rate increased; Glycosylated haemoglobin increased; Granulocyte count increased; Hyperhidrosis; Hypotension; Infusion related reaction; Intervertebral discitis; Joint noise; Miosis; Monocyte count increased; Multiple sclerosis; Muscular weakness; Nasal congestion; Nausea; Neuropathy peripheral; Neutrophil count increased; Oxygen saturation decreased; Pain; Post cholecystectomy syndrome; Post-traumatic stress disorder; Progressive multifocal leukoencephalopathy; Red blood cell count decreased; Red blood cell sedimentation rate increased; Rheumatoid arthritis; Rheumatoid factor increased; Spinal disorder; Syncope; Temperature intolerance; Therapeutic response decreased; Throat clearing; Throat irritation; Type 2 diabetes mellitus; Ulcer; Urticaria; Vitamin B12 deficiency; Vitamin B12 increased; Vitamin D deficiency; Weight decreased; White blood cell count increased; White blood cells urine positive"
-      },
-      {
-        "source_id": "openfda:23353876",
-        "score": 3,
-        "primary_drug": "ICY HOT PAIN RELIEVING CREAM",
-        "is_serious": false,
-        "reactions": "No adverse event; Drug ineffective"
-      },
-      {
-        "source_id": "openfda:23354942",
-        "score": 3,
-        "primary_drug": "ASPIRIN",
-        "is_serious": true,
-        "reactions": "Diaphragmatic hernia; Tachycardia; Gastric ulcer; Haemorrhage; Diarrhoea haemorrhagic; Thyroid hormones decreased; Haemoglobin abnormal"
-      },
-      {
-        "source_id": "openfda:23355187",
-        "score": 3,
-        "primary_drug": "ACETAMINOPHEN\\ASPIRIN\\CAFFEINE",
-        "is_serious": true,
-        "reactions": "Drug dependence"
-      },
-      {
-        "source_id": "openfda:23355188",
-        "score": 3,
-        "primary_drug": "ACETAMINOPHEN\\ASPIRIN\\CAFFEINE",
-        "is_serious": true,
-        "reactions": "Drug dependence"
-      }
-    ]
-  },
-  "brain_hands": {
-    "source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
-    "triage_level": "NOW",
-    "red_flags": [
-      "high_risk_keyword:chest pain",
-      "high_risk_keyword:diaphoresis"
-    ],
-    "decision_basis": {
-      "left_eye_hits": 5,
-      "right_eye_hits": 5,
-      "right_eye_is_advisory": true,
-      "er_state": {
-        "available_beds": 1,
-        "occupancy_pct": 96,
-        "queue_length": 8
-      }
+  "recruiter_stop_moments": [
+    {
+      "moment": "Baymax refuses to open expensive eyes for a routine case",
+      "proof": "trajectories.attention_skip"
     },
-    "disposition": "assign_bed",
-    "task_id": "task:baymax-audit-case:assign_bed",
-    "receiver_acknowledged": true,
-    "action_status": "committed",
-    "before_state": {
-      "committed": false,
-      "disposition": null,
-      "action_seq": null
+    {
+      "moment": "The same case changes from discharge_plan to human_review when the drug-safety eye opens",
+      "proof": "immune_proof"
     },
-    "after_state": {
-      "committed": true,
-      "disposition": "assign_bed",
-      "action_seq": 1
+    {
+      "moment": "Baymax states that openFDA is a population signal, not proof of causality",
+      "proof": "trajectories.cross_domain_brake.brain_hands.mouth"
     },
-    "tool_receipt": {
-      "detail": "committed disposition assign_bed (seq 1)",
-      "applied": true
+    {
+      "moment": "The brake stops the hand, but the clinician-review nerve still receives and ACKs work",
+      "proof": "trajectories.cross_domain_brake.brain_hands"
     },
-    "outcome_verified": true,
-    "false_success_detected": false,
-    "trace_stages": [
-      "intake_accepted",
-      "decided",
-      "task_created",
-      "task_acknowledged",
-      "action_succeeded",
-      "outcome_verified"
-    ]
-  },
-  "verdict": "closed-loop simulation proven"
+    {
+      "moment": "When brakes allow action, durable state changes and Baymax re-reads the outcome",
+      "proof": "trajectories.bounded_action.brain_hands"
+    }
+  ]
 }

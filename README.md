@@ -1,15 +1,36 @@
-# Baymax ER Nurse Assistant
+# Baymax: Cross-Domain Evidence-to-Action Agent
 
-One recruiter-auditable integration spine over four public healthcare AI repos.
+Baymax is not impressive because it has more data. It is impressive when
+another perspective changes what it decides to do.
 
 ```text
 cheap NOSE
-  -> left eye: 55,500 synthetic ER encounters
-  -> right eye: 5,000 real openFDA adverse-event reports
-  -> brain: NOW / SOON / WAIT + Bed Ops disposition
-  -> hands: durable state change + receiver ACK
-  -> outcome check: re-read state; never trust "action succeeded"
+  -> patient eye: what does this case look like?
+  -> drug-safety eye: what risk is invisible from the patient view?
+  -> brain: compare the patient-only decision with the cross-domain decision
+  -> brakes: act, or stop and require human review
+  -> nerves + hands: hand off or change durable state
+  -> immune: pin the decision-changing trajectory in CI
 ```
+
+## The Stop-And-Read Proof
+
+```text
+Same case: abdominal pain after Ibuprofen
+
+Patient eye only
+  -> SOON
+  -> discharge_plan
+
+Add the drug-safety eye
+  -> 16/17 exact-Ibuprofen openFDA reports marked serious
+  -> population signal only; Baymax does NOT claim causality
+  -> brake blocks autonomous discharge
+  -> clinician-review nerve receives and ACKs the case
+```
+
+This is the point of the two eyes: cross-domain evidence can change action
+policy without pretending the model knows more than the evidence supports.
 
 ## Audit In One Command
 
@@ -20,16 +41,14 @@ make test
 make audit
 ```
 
-The final receipt is `outputs/baymax_audit.json`. It records:
+The final receipt is `outputs/baymax_audit.json`. It contains three trajectories:
 
-- exact source commit and artifact for every organ
-- whether NOSE ran before the expensive eyes
-- patient and openFDA corpus counts
-- evidence hits from both eyes
-- triage and Bed Ops decision
-- receiver ACK
-- durable before/after state
-- independently re-read outcome
+- attention skip: NOSE stops a routine case before expensive evidence work
+- cross-domain brake: another perspective changes action into human review
+- bounded action: durable state changes and the outcome is independently re-read
+
+It also records exact source commits, organ grades, the solo-engineer A+ ceiling,
+and the remaining shortest path.
 
 ## Organ Sources
 
@@ -58,7 +77,7 @@ baymax/
 ├── baymax/audit.py             ✅ runs nose -> eyes -> brain -> hands -> verify
 ├── tests/test_audit.py         ✅ proves skip-path and full closed-loop path
 ├── scripts/sync_sources.sh     ✅ fetches the four public sibling sources
-├── outputs/baymax_audit.json   🟡 machine-readable end-to-end receipt
+├── outputs/baymax_audit.json   🟡 three trajectories + dream-state audit
 ├── .github/workflows/audit.yml ✅ regenerates proof on every change
 ├── Makefile                    ✅ one-command audit entry points
 ├── SPEC.md                     📖 scope and proof boundary

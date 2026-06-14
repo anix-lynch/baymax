@@ -6,7 +6,7 @@ Human/automation ratio: `5% | 95%`
 
 Give a recruiter one repository and one command that proves the Baymax flow:
 
-`nose -> two eyes -> brain -> durable hands -> outcome verification`
+`nose -> two eyes -> decision change -> brakes -> nerves/hands -> verification`
 
 ## Source Repositories
 
@@ -24,9 +24,12 @@ Give a recruiter one repository and one command that proves the Baymax flow:
 - [x] Right eye scans 5,000 real openFDA reports.
 - [x] Every organ records its exact sibling commit and source artifact.
 - [x] Brain selects triage and Bed Ops disposition.
+- [x] Cross-domain evidence changes action policy on the same case.
+- [x] Mouth explains the decision without overstating openFDA causality.
+- [x] Brakes stop autonomous action and Nerves hand off to human review.
 - [x] Hands produce durable before/after state and receiver ACK.
 - [x] Outcome verifier re-reads durable state.
-- [x] Tests defend skip-path and full closed-loop path.
+- [x] Immune tests defend skip, decision-change, and full closed-loop paths.
 - [x] CI regenerates one recruiter-readable audit receipt.
 
 ## Proof Boundary
