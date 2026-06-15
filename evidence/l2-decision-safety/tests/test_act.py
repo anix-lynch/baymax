@@ -134,7 +134,7 @@ def test_status_exposes_versioned_trusted_safety_receipt(client):
     assert result["safety_decision"] == "ACT"
 
     status = client.get(f"/v1/cases/{cid}/status").json()
-    assert status["latest_policy_version"] == "action-safety.v1"
+    assert status["latest_policy_version"] == "action-safety.v2"
     assert status["latest_derived_facts"]["caller_safety_overrides_used"] is False
     assert status["latest_derived_facts"]["receiver_acknowledged"]["source"] == "durable_store.tasks.status"
 
@@ -147,5 +147,37 @@ def test_status_exposes_versioned_trusted_safety_receipt(client):
         ).fetchone()
     finally:
         store.close()
-    assert pre_action["policy_version"] == "action-safety.v1"
-    assert "action-safety.v1.ACTION_POLICY" in pre_action["derived_facts_json"]
+    assert pre_action["policy_version"] == "action-safety.v2"
+    assert "action-safety.v2.ACTION_POLICY" in pre_action["derived_facts_json"]
+
+
+def test_missing_capacity_fields_derive_low_confidence_and_stop_action(client):
+    payload = _payload("case-derived-low-confidence")
+    payload["er_state"] = {"available_beds": 3}
+
+    result = client.post("/v1/act", json=payload).json()
+    assert result["safety_decision"] == "ASK_FOR_INFO"
+    assert result["safety_reason_code"] == "LOW_CONFIDENCE"
+    assert result["after_committed"] is None
+
+    status = client.get("/v1/cases/case-derived-low-confidence/status").json()
+    assert status["confidence_after"] == 0.4
+    assert status["latest_derived_facts"]["capacity_field_completeness"]["value"] == 0.333
+    assert status["latest_derived_facts"]["evidence_sufficiency_confidence"]["calibrated_model_confidence"] is False
+
+
+def test_derived_capacity_conflict_blocks_high_risk_action(client):
+    payload = _payload("case-derived-conflict")
+    payload["bed_pressure_risk"] = "low"
+    payload["er_state"] = {"available_beds": 0, "occupancy_pct": 99, "queue_length": 12}
+
+    result = client.post("/v1/act", json=payload).json()
+    assert result["disposition"] == "divert"
+    assert result["safety_decision"] == "HUMAN_REVIEW"
+    assert result["safety_reason_code"] == "HIGH_RISK_EVIDENCE_CONFLICT"
+    assert result["after_committed"] is None
+
+    status = client.get("/v1/cases/case-derived-conflict/status").json()
+    conflict = status["latest_derived_facts"]["evidence_conflicts"]
+    assert conflict["value"] == ["bed_pressure_low_vs_saturated_capacity"]
+    assert conflict["source"] == "action-safety.v2.capacity_consistency_rules"

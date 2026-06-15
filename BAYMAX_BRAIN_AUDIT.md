@@ -72,12 +72,13 @@ After a non-`ACT` safety verdict, `/v1/ask` still builds the collaboration
 graph. Bed Ops can appear with `executed=True` and a disposition even when the
 safety decision is `ASK_FOR_INFO` or `SUPPRESS`.
 
-### Trusted conflict and confidence are unavailable
+### Model confidence is not calibrated
 
 The public action API can no longer assert confidence, conflict, risk,
 reversibility, or ACK. Action risk and reversibility come from versioned
-policy, and ACK comes from durable task state. However, the action loop does
-not yet receive trusted cross-domain conflict or calibrated confidence facts.
+policy, ACK comes from durable task state, and canonical capacity
+contradictions now change action policy. Evidence-sufficiency confidence is
+derived honestly, but it is not calibrated model confidence.
 
 ## Evidence Map
 
@@ -123,3 +124,11 @@ confidence, conflict, risk, reversibility, and ACK. The Brain now derives
 action risk and reversibility from `action-safety.v1`, verifies ACK from
 durable task state, and persists policy version plus source facts in every
 safety receipt. Trusted conflict and calibrated confidence wiring remain open.
+
+### June 2026 - Trusted operational conflict Phase 2B
+
+Added `action-safety.v2` operational assessment over canonical capacity
+evidence. Missing capacity fields derive low evidence sufficiency and stop
+before decision. Contradictory bed-pressure and capacity facts survive into the
+pre-action gate, where high-risk irreversible `divert` becomes durable human
+review before Hands execute.

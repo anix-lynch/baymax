@@ -52,8 +52,8 @@ without changing reality.
 
 - General cross-domain conflict detection.
 - Confidence calibration against observed correctness.
-- Trusted cross-domain conflict derivation.
 - Calibrated confidence derived from observed model/evidence performance.
+- Generalized cross-domain conflict rules beyond operational capacity.
 - Claim-level citation enforcement for every generated statement.
 - Self-critique or alternative-reasoning check before recommendation.
 - Runtime memory of prior failure patterns.
@@ -63,10 +63,10 @@ without changing reality.
 
 ### Self-doubt is honest but incomplete
 
-Baymax records trusted risk, reversibility, and ACK facts, and explicitly marks
-conflict and confidence unavailable instead of accepting caller assertions.
-It still cannot act on conflict or calibrated confidence until those trusted
-sources are wired.
+Baymax records trusted risk, reversibility, ACK, operational conflict, and
+evidence sufficiency facts. Operational contradictions can now stop a
+high-risk action. The remaining confidence gap is calibration against labelled
+correctness, not caller control.
 
 ### Unsupported claims can still pass
 
@@ -121,3 +121,11 @@ Removed the public API's ability to self-certify safety. Versioned action
 policy now supplies risk and reversibility, durable task state supplies ACK,
 and safety receipts persist policy version plus derived-fact provenance.
 Regression tests reject attempts to submit the removed safety fields.
+
+### June 2026 - Trusted operational conflict Phase 2B
+
+Versioned capacity-consistency rules now derive conflict from canonical
+evidence. A contradictory low-pressure/saturated-capacity case selects
+`divert`, then the Immune gate changes the outcome to `HUMAN_REVIEW` before
+durable state changes. Missing capacity fields derive low evidence sufficiency
+and return `ASK_FOR_INFO`.

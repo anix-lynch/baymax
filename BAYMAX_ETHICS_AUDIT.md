@@ -185,3 +185,9 @@ fields. Risk and reversibility now come from versioned policy, ACK comes from
 durable task state, and the receipt records the authority source used for the
 decision. Trusted conflict and calibrated confidence remain required before
 those facts can govern action.
+
+### June 2026 - Trusted operational conflict Phase 2B
+
+Baymax now challenges contradictory operational evidence instead of obeying
+the resulting high-risk action. The challenge is enforced before state change
+and names the canonical conflict source in the durable safety receipt.

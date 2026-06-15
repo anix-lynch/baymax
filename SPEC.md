@@ -52,19 +52,20 @@ copy the museum into the movie.
 
 ## Current Score
 
-Current controllable L2 maturity: **73/100** after Phase 2A.
+Current controllable L2 maturity: **74/100** after Phase 2B.
 
 The audited baseline was **66/100**. Phase 1 added four points by making the
 recommendation path fail before generation and planning. Phase 2A added three
 points by removing public safety self-certification and deriving action policy
-and ACK from trusted state.
+and ACK from trusted state. Phase 2B added one point by deriving operational
+conflict and evidence sufficiency from canonical evidence.
 
 | Surface | Score | Current truth |
 |---|---:|---|
 | Recruiter movie | 9/10 | Attention Flip, Decision Flip, Brake Save are memorable |
-| Brain | 14/15 | Non-ACT stops before generation/planning; action risk is versioned policy |
+| Brain | 14/15 | Non-ACT stops early; canonical capacity conflict changes action policy |
 | Hands | 14/15 | Durable action, idempotency, retry, false-success detection |
-| Immune | 12/15 | Caller cannot self-certify safety; trusted conflict/confidence derivation remains |
+| Immune | 13/15 | Trusted conflict and evidence sufficiency stop actions; calibration remains |
 | Nerves | 7/10 | Durable status/ACK exists; receiver is not independently invoked |
 | Heart + Ethics | 5/10 | Principles exist; consent, authority, and follow-up closure are not runtime |
 | A/B/C live wiring | 6/15 | Eyes are real; online Nose remains a cheap rule gate |
@@ -145,7 +146,7 @@ Acceptance:
 
 ### Phase 2 - Trusted Safety Derivation
 
-Status: **PARTIAL - Phase 2A COMPLETE; Phase 2B NEXT**
+Status: **COMPLETE FOR OPERATIONAL SAFETY; MODEL CALIBRATION DEFERRED**
 
 Goal: stop trusting API callers to certify whether an action is safe.
 
@@ -156,8 +157,10 @@ Required changes:
 - [x] Record derived facts and policy version in every safety receipt.
 - [x] Remove confidence, conflict, risk, reversibility, and ACK overrides from
   the public action contract.
-- [ ] Derive evidence conflict from trusted cross-domain evidence records.
-- [ ] Derive confidence from calibrated model/evidence outputs.
+- [x] Derive operational conflict from canonical capacity evidence.
+- [x] Derive evidence-sufficiency confidence from canonical field completeness.
+- [ ] Calibrate model confidence against labelled correctness before calling it
+  calibrated confidence.
 
 Acceptance:
 
@@ -165,10 +168,11 @@ Acceptance:
   conflict, risk, reversibility, or ACK fields.
 - [x] Every safety decision identifies source facts and policy version.
 - [x] Existing tests and action eval remain green.
-- [ ] Trusted conflict and confidence facts change or suppress a real action.
+- [x] Trusted conflict and evidence-sufficiency facts change or suppress a real
+  action.
 
-Earned maturity gain: **+3**. Final point requires trusted conflict and
-confidence wiring; recording them as unavailable is honest but not derivation.
+Earned maturity gain: **+4**. Model calibration remains a separate evidence
+quality upgrade, not a blocker for trusted operational safety derivation.
 
 ### Phase 3 - Independent Receiver And ACK Deadline
 
