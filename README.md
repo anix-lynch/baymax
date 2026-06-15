@@ -2,7 +2,9 @@
 
 **ER intern ที่ไม่เหนื่อย ไม่ลืม ไม่อายที่จะถาม**
 
-![Baymax changes its action when ER capacity changes](assets/baymax-decision-flip.gif)
+![Baymax changes its action when ER capacity changes](demo.gif)
+
+🔗 **Live:** deployed URL added after the final showroom gate
 
 > “ผมไม่ได้ฉลาดเพราะมีอวัยวะเยอะ ผมฉลาดเพราะรู้ว่าควรใช้อวัยวะไหน
 > เมื่อไร และยอมเปลี่ยนใจเมื่ออีกมุมเปิดความจริงใหม่”
@@ -77,6 +79,19 @@ The final receipt is `outputs/baymax_audit.json`. It contains three trajectories
 It also records exact source commits, organ grades, the solo-engineer A+ ceiling,
 and the remaining shortest path.
 
+## Simulated Deployment Readiness
+
+Baymax includes a deliberately thin FDE-adjacent rehearsal package:
+
+```bash
+make readiness
+```
+
+It verifies five acceptance gates against the live audit receipt, then injects
+a false-success receipt and proves the release contract detects it and requires
+rollback. The result is eligible only for **simulated shadow**, never presented
+as hospital deployment or adoption.
+
 ## Honesty Ledger
 
 `outputs/baymax_audit.json` ends with a `honesty_ledger`: every organ maps to one
@@ -125,10 +140,12 @@ baymax/
 ├── baymax/demo.py              ✅ plays the three memorable cases
 ├── baymax/audit.py             ✅ generates deep evidence receipts
 ├── baymax/served_nose.py       ✅ serves and evaluates pre-eye attention
+├── deployment-readiness/       ✅ simulated acceptance, rollback, and handoff
 ├── cases/legendary_cases.json  ✅ the public three-case screenplay
+├── docs/baymax/constitution/   📖 versioned architecture health records
 ├── tests/test_audit.py         ✅ pins every movie outcome in CI
 ├── scripts/sync_sources.sh     ✅ fetches the four public sibling sources
-├── outputs/baymax_audit.json   🟡 three trajectories + dream-state audit
+├── outputs/                    🟡 audit + simulated rollout receipts
 ├── .github/workflows/audit.yml ✅ regenerates proof on every change
 ├── Makefile                    ✅ one-command audit entry points
 ├── SPEC.md                     📖 scope and proof boundary

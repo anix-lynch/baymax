@@ -18,10 +18,10 @@ const scenes = {
     moneyClass: "cheap",
     receipt: "ผมหยุดก่อนใช้ evidence work ราคาแพง และไม่ได้พยายามทำ action ครับ",
     steps: [
-      ["nose", "👃", "งานเข้ามาแล้วครับ ผมขอดมราคาถูกก่อน"],
-      ["nose", "👃", "ผมยังไม่เจอสัญญาณที่ควรเปิดตาครับ"],
+      ["nose", "👃", "งานเข้ามาแล้วครับ ผมตรวจด้วย served ESI attention signal ก่อน"],
+      ["nose", "👃", "เคสนี้ได้ priority tier 4 ผมจึงไม่เปิดตาราคาแพงครับ"],
       ["mouth", "🗣", "เคสนี้ยังไม่ต้องใช้การค้นหาหนัก ผมจะไม่ทำเกินจำเป็นครับ"],
-      ["immune", "🛡", "ผมตรวจซ้ำแล้วครับ ตาทั้งสองข้างไม่เคยถูกเปิด"],
+      ["immune", "🛡", "ผมตรวจซ้ำแล้วครับ serious-case recall ยังมากกว่า 95% และตาทั้งสองข้างไม่เคยถูกเปิด"],
     ],
   },
   decision: {
@@ -109,7 +109,12 @@ function addThought(icon, copy) {
 
 function validateTruth(caseId) {
   if (!audit) return true;
-  if (caseId === "attention") return audit.trajectories.attention_skip.flow.length === 1;
+  if (caseId === "attention") {
+    const nose = audit.trajectories.attention_skip.nose;
+    return audit.trajectories.attention_skip.flow.length === 1
+      && nose.decided_by === "served_signal"
+      && nose.evaluation.serious_case_recall >= 0.95;
+  }
   if (caseId === "decision") return audit.decision_flip_proof.action_changed === true;
   return audit.immune_proof.behavior_changed === true
     && audit.trajectories.cross_domain_brake.brain_hands.hands_executed === false

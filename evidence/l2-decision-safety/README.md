@@ -4,7 +4,7 @@ This tracked evidence pack makes every Python file cited by the Baymax Brain, Ne
 
 ## Ownership
 
-- Canonical implementation: `/Users/anixlynch/dev/healthcare-genai-engineer`
+- Canonical implementation: [healthcare-genai-engineer](https://github.com/anix-lynch/healthcare-genai-engineer)
 - Recruiter-visible evidence copy: this directory
 - Integrity manifest: `SHA256SUMS`
 
@@ -25,9 +25,9 @@ The evidence copy is not a second runtime source of truth. Changes must be made 
 
 ## Verify
 
-From this directory:
+From the Baymax repository root:
 
 ```bash
-shasum -a 256 -c SHA256SUMS
-python -m compileall -q .
+(cd evidence/l2-decision-safety && shasum -a 256 -c SHA256SUMS)
+python -m compileall -q evidence/l2-decision-safety
 ```

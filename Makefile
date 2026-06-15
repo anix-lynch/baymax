@@ -1,4 +1,4 @@
-.PHONY: sync demo ui audit test clean
+.PHONY: sync demo ui audit readiness test clean
 
 # Baymax uses 3.10+ syntax (e.g. `int | None`). Default python3 must be >= 3.10.
 # Override on macOS if system python3 is 3.9: make test PYTHON=/opt/homebrew/bin/python3
@@ -9,6 +9,9 @@ sync:
 
 audit:
 	$(PYTHON) -m baymax.audit
+
+readiness: audit
+	$(PYTHON) deployment-readiness/verify.py
 
 demo:
 	$(PYTHON) -m baymax.demo

@@ -68,12 +68,10 @@ durable lifecycle with guarded closure and human escalation.
 Phase 5 added three points by replacing the showroom's unversioned keyword
 gate with a served, evaluated patient attention contract.
 
-Showroom hardening (no maturity points claimed): the audit now emits an
+Showroom hardening (no maturity points claimed): the audit emits an
 `honesty_ledger` that gates the headline verdict at the weakest load-bearing
-organ. NOSE (signal-routing) is the weakest leaf and caps the headline at 🟡.
-This hardens claim integrity, not capability — it is the spotlight that makes
-Phase 5 the highest-leverage next move. Showroom commit `6446d59`; last
-verified showroom commit `44ca919`.
+organ. Phase 5 lifted NOSE to green; NERVES now honestly caps the headline at
+yellow because cross-service recovery is not yet proven.
 
 | Surface | Score | Current truth |
 |---|---:|---|
@@ -84,7 +82,7 @@ verified showroom commit `44ca919`.
 | Nerves | 10/10 | Independent ACK, deadline, timeout, escalation, and visible wait state |
 | Heart + Ethics | 8/10 | Follow-up closure is durable; consent and authority remain design gaps |
 | A/B/C + signal wiring | 9/15 | Eyes are live; patient Nose is served from L2; C remains a separate batch-domain proof |
-| Runtime/deployment | 6/10 | Live service/showroom exists; operational runtime is not fully unified |
+| Runtime/deployment | 7/10 | Simulated acceptance, rollback, incident, and handoff contract is runnable |
 
 Target: **80+ without hospital access, sales work, fake adoption, or feature
 soup.**
@@ -268,21 +266,18 @@ Earned maturity gain: **+3**.
 
 ## Thin Deployment Readiness
 
-After the L2 phases above, migrate only the useful rehearsal artifacts from
-`healthcare-forward-deployed-engineer`:
+Status: **COMPLETE — deliberately thin.**
 
-- integration contract
-- acceptance contract
-- rollout and rollback
-- runbook
-- handoff
-- simulated incident exercise
+Implemented:
 
-Label every artifact `SIMULATED DEPLOYMENT READINESS`. Do not migrate duplicate
-agent pipelines, retrieval, guardrails, fake production metrics, or adoption
-proof.
+- Machine-readable acceptance contract over the live Baymax receipt.
+- Bounded offline replay, simulated shadow, and supervised sandbox stages.
+- False-success incident drill that must produce `rollback_required`.
+- Explicit release, safety, and sandbox ownership handoff.
 
-Budget: **5% of Baymax effort**, never the active phase while an L2 gap remains.
+Every artifact is labelled `SIMULATED DEPLOYMENT READINESS`. No duplicate FDE
+runtime, fake customer metrics, hospital workflow, or adoption proof was
+migrated.
 
 ## Stop Doing
 

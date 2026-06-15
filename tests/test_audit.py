@@ -1,5 +1,15 @@
 from baymax.audit import ROOT, nose_route, run_audit_suite, run_case
 from baymax.served_nose import evaluate_signal_contract
+import importlib.util
+
+
+def _readiness_module():
+    path = ROOT / "deployment-readiness" / "verify.py"
+    spec = importlib.util.spec_from_file_location("deployment_readiness_verify", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_nose_stops_low_value_case_before_eyes(tmp_path):
@@ -123,11 +133,25 @@ def test_honesty_ledger_gates_headline_at_weakest_load_bearing_leaf():
 def test_ui_story_is_bound_to_honest_proof():
     html = (ROOT / "ui" / "index.html").read_text(encoding="utf-8")
     script = (ROOT / "ui" / "app.js").read_text(encoding="utf-8")
-    hero_gif = ROOT / "assets" / "baymax-decision-flip.gif"
+    hero_gif = ROOT / "demo.gif"
     assert "../outputs/baymax_audit.json" in html
     assert "../outputs/baymax_audit.json" in script
     assert hero_gif.stat().st_size > 50_000
     assert "action_changed === true" in script
     assert "hands_executed === false" in script
     assert "receiver_acknowledged === true" in script
+    assert "https://github.com/anix-lynch/baymax" in html
+    assert "deployment_readiness_receipt.json" in html
+    assert 'nose.decided_by === "served_signal"' in script
     assert "Warfarin" not in html + script
+
+
+def test_simulated_readiness_contract_detects_false_success():
+    run_audit_suite()
+    module = _readiness_module()
+    receipt = module.build_receipt()
+    assert receipt["label"] == "SIMULATED DEPLOYMENT READINESS"
+    assert receipt["acceptance"]["passed"] is True
+    assert receipt["incident_drill"]["breach_detected"] is True
+    assert receipt["incident_drill"]["decision"] == "rollback_required"
+    assert receipt["release_decision"] == "eligible_for_simulated_shadow"

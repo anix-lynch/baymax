@@ -50,7 +50,7 @@ body {
 button, a { font: inherit; }
 button { cursor: pointer; }
 .shell { max-width: 1280px; margin: 0 auto; padding: var(--space-5); }
-.topbar, .receipt, .workbench, .panel-heading, .identity, .working-state, .receipt-actions {
+.topbar, .receipt, .workbench, .panel-heading, .identity, .working-state, .receipt-actions, .topbar-actions {
   display: flex;
   align-items: center;
 }
@@ -67,6 +67,9 @@ h1, h2 { margin: 0; color: var(--color-text-primary); }
 h1 { font-size: clamp(17px, 2vw, 23px); letter-spacing: -.03em; }
 h2 { font-size: 16px; letter-spacing: -.02em; }
 .working-state { gap: var(--space-2); font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+.topbar-actions { gap: var(--space-3); }
+.source-link { padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); color: var(--color-text-secondary); font: 600 10px/1.5 var(--font-mono); text-decoration: none; }
+.source-link:hover { border-color: var(--color-border-focus); color: var(--color-accent-hover); }
 .working-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-success); box-shadow: 0 0 0 5px var(--color-success-bg); }
 .working-dot.busy { animation: breathe 1s ease-in-out infinite; }
 .intro { text-align: center; padding: var(--space-3) 0 var(--space-6); }
@@ -137,7 +140,7 @@ h2 { font-size: 16px; letter-spacing: -.02em; }
 @media (max-width: 640px) {
   .shell { padding: var(--space-3); }
   .topbar, .receipt { align-items: flex-start; flex-direction: column; }
-  .working-state { margin-left: 70px; margin-top: -15px; }
+  .topbar-actions { width: 100%; justify-content: space-between; padding-left: 70px; margin-top: -15px; }
   .intro { text-align: left; }
   .case-tabs { display: grid; border-radius: var(--radius-lg); }
   .case-tab { text-align: left; }
