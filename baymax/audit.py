@@ -282,7 +282,9 @@ def _discovery_disposition(triage_level: str, er_state: dict[str, Any], db_path:
 def retrieval_discovery() -> dict[str, Any]:
     """Symptom-language expansion uncovers an unmentioned multi-domain trajectory,
     then carries it through real triage and a real durable bed action."""
-    injected_case_id = _ensure_mother_case()
+    injected = _ensure_mother_case()
+    injected_case_id = injected["case_id"]
+    schema_validation = injected["validation"]
     _load_body()
     from retrieval.retriever import search
     from workflows.classify_esi import rule_based_esi
@@ -384,6 +386,17 @@ def retrieval_discovery() -> dict[str, Any]:
             "holdout": True,
             "excluded_from_labelled_eval": True,
             "present_in_upstream_commit": False,
+            "lineage_class": "downstream_augmentation",
+            "reconciles_to_upstream": False,
+            "schema_contract_source": "upstream corpus header (source of truth for field set)",
+            "schema_validation": schema_validation,
+            "on_violation_policy": (
+                "validate against the upstream schema contract at the boundary: reject "
+                "downstream-invented fields, default+disclose missing fields, never coerce "
+                "values, and quarantine via holdout + marker. A lineage trace classifies this "
+                "row as downstream-originated with no upstream ancestor — it is never written "
+                "back upstream."
+            ),
             "downstream_warning": (
                 "Local augmentation only. Dense/Vertex index rebuilds from this corpus will "
                 "include the marked synthetic row; filter by holdout==1 or the row marker "

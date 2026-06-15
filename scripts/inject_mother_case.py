@@ -53,12 +53,42 @@ MOTHER = {
 }
 
 
-def ensure_mother_case() -> str:
-    """Append the mother case if absent. Returns its synthetic case_id."""
+def validate_against_contract(provided: dict, fieldnames: list[str]) -> dict:
+    """Validate a downstream-appended row against the upstream schema contract.
+
+    A smart pipeline neither blindly auto-fixes nor blindly rejects:
+      - fields invented downstream that the upstream schema does not declare
+            -> REJECT (raise). Never silently drop or coerce — that hides drift.
+      - declared-but-missing fields
+            -> default to empty, but DISCLOSE exactly which were defaulted.
+      - existing values
+            -> never rewritten.
+    The upstream header IS the contract, so "how many fields / which fields" is
+    answered by the source of truth, not by guesswork.
+    """
+    declared = list(fieldnames)
+    unknown = sorted(set(provided) - set(declared))
+    if unknown:
+        raise ValueError(
+            f"contract violation: field(s) {unknown} are not in the upstream schema "
+            f"({len(declared)} fields); refusing to append a drifted row."
+        )
+    defaulted = sorted(set(declared) - set(provided))
+    return {
+        "contract_field_count": len(declared),
+        "defaulted_fields": defaulted,
+        "unknown_fields_rejected": unknown,
+        "conforms": True,
+    }
+
+
+def ensure_mother_case() -> dict:
+    """Append the mother case if absent. Returns case_id + schema-validation report."""
     if not CORPUS.exists():
         raise FileNotFoundError(f"corpus not found at {CORPUS}; run `make sync` first")
     rows = list(csv.DictReader(CORPUS.open(newline="")))
     fieldnames = list(rows[0].keys())
+    validation = validate_against_contract(MOTHER, fieldnames)
     rows = [r for r in rows if MARK not in (r.get("Name") or "")]
     row = {k: "" for k in fieldnames}
     row.update({k: v for k, v in MOTHER.items() if k in fieldnames})
@@ -67,7 +97,7 @@ def ensure_mother_case() -> str:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
-    return f"L1-{len(rows) - 1:06d}"
+    return {"case_id": f"L1-{len(rows) - 1:06d}", "validation": validation}
 
 
 if __name__ == "__main__":

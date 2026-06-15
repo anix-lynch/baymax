@@ -15,6 +15,16 @@
         "holdout": true,
         "excluded_from_labelled_eval": true,
         "present_in_upstream_commit": false,
+        "lineage_class": "downstream_augmentation",
+        "reconciles_to_upstream": false,
+        "schema_contract_source": "upstream corpus header (source of truth for field set)",
+        "schema_validation": {
+          "contract_field_count": 29,
+          "defaulted_fields": [],
+          "unknown_fields_rejected": [],
+          "conforms": true
+        },
+        "on_violation_policy": "validate against the upstream schema contract at the boundary: reject downstream-invented fields, default+disclose missing fields, never coerce values, and quarantine via holdout + marker. A lineage trace classifies this row as downstream-originated with no upstream ancestor \u2014 it is never written back upstream.",
         "downstream_warning": "Local augmentation only. Dense/Vertex index rebuilds from this corpus will include the marked synthetic row; filter by holdout==1 or the row marker before any non-demo use. The upstream L1 source-of-truth was not modified."
       },
       "raw_query_top_source_id": "L1-000281",

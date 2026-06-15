@@ -183,3 +183,29 @@ def test_simulated_readiness_contract_detects_false_success():
     assert receipt["incident_drill"]["breach_detected"] is True
     assert receipt["incident_drill"]["decision"] == "rollback_required"
     assert receipt["release_decision"] == "eligible_for_simulated_shadow"
+
+
+def test_corpus_augmentation_is_disclosed_and_schema_validated():
+    result = retrieval_discovery()
+    ca = result["corpus_augmentation"]
+    assert ca["present_in_upstream_commit"] is False
+    assert ca["lineage_class"] == "downstream_augmentation"
+    assert ca["reconciles_to_upstream"] is False
+    assert ca["schema_validation"]["conforms"] is True
+    assert ca["schema_validation"]["unknown_fields_rejected"] == []
+
+
+def test_contract_rejects_downstream_invented_fields():
+    import importlib.util
+    import pytest
+
+    path = ROOT / "scripts" / "inject_mother_case.py"
+    spec = importlib.util.spec_from_file_location("inj_contract", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader
+    spec.loader.exec_module(module)
+    # A field the upstream schema never declared must be rejected, not silently dropped.
+    with pytest.raises(ValueError):
+        module.validate_against_contract(
+            {"Name": "x", "made_up_downstream_field": "y"}, ["Name", "Age"]
+        )
