@@ -80,6 +80,7 @@ def run_action_loop(
     policy: ActionRetryPolicy | None = None,
     sleep: Callable[[float], None] | None = None,
     safety_context: SafetyContext | None = None,
+    require_external_ack: bool = False,
 ) -> LoopResult:
     """Process one source record through the full durable action loop.
 
@@ -203,6 +204,24 @@ def run_action_loop(
     # ── Coordination: durable task + separate receiver ACK ──────────────────
     store.create_task(task_id, correlation_id, kind="action", owner="bed_ops_worker", idempotency_key=idem)
     store.log_event(correlation_id, "task_created", {"task_id": task_id, "idempotency_key": idem})
+    if require_external_ack:
+        ack_derivation = derive_ack_state(evidence, store.get_task(task_id))
+        ack_verdict = evaluate_safety(ack_derivation.context)
+        store.record_safety_decision(
+            correlation_id, ack_verdict,
+            policy_version=ack_derivation.policy_version,
+            derived_facts=ack_derivation.facts,
+        )
+        if ack_verdict.decision != "ACT":
+            store.log_event(correlation_id, "waiting_for_ack", {
+                "task_id": task_id, "reason_code": ack_verdict.reason_code,
+            })
+            return LoopResult(
+                correlation_id=correlation_id, accepted=True, blocked_reason=[ack_verdict.reason_code],
+                disposition=disposition, task_id=task_id, acknowledged=False, action=None,
+                outcome=None, escalation_id=None, safety_decision=ack_verdict.decision,
+                safety_reason_code=ack_verdict.reason_code,
+            )
     if safety_context is not None and safety_context.receiver_acknowledged is False:
         ack_verdict = evaluate_safety(SafetyContext(
             ingested_at=evidence.ingested_at,
@@ -223,7 +242,7 @@ def run_action_loop(
             outcome=None, escalation_id=None, safety_decision=ack_verdict.decision,
             safety_reason_code=ack_verdict.reason_code,
         )
-    acked = acknowledge(store, task_id, correlation_id)
+    acked = False if require_external_ack else acknowledge(store, task_id, correlation_id)
     # Replay: task already acknowledged on the first pass; durable state is the
     # source of truth, so treat an already-acknowledged task as owned.
     if not acked:

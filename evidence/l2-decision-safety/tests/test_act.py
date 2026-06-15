@@ -11,8 +11,6 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 
-from action_engine.loop import run_action_loop
-from action_engine.safety import SafetyContext
 from action_engine.store import ActionStore
 from app.main import app
 
@@ -35,10 +33,16 @@ def _payload(correlation_id="case-act-smoke"):
     }
 
 
+def _act_to_completion(client, payload):
+    first = client.post("/v1/act", json=payload).json()
+    assert first["safety_decision"] == "WAIT_FOR_ACK"
+    ack = client.post(f"/v1/cases/{payload['correlation_id']}/ack")
+    assert ack.status_code == 200 and ack.json()["acknowledged"] is True
+    return client.post("/v1/act", json=payload).json()
+
+
 def test_act_changes_durable_state(client):
-    r = client.post("/v1/act", json=_payload())
-    assert r.status_code == 200
-    data = r.json()
+    data = _act_to_completion(client, _payload())
     assert data["accepted"] is True
     assert data["disposition"] is not None
     assert data["acknowledged"] is True
@@ -50,7 +54,7 @@ def test_act_changes_durable_state(client):
 
 
 def test_act_is_idempotent_on_replay(client):
-    first = client.post("/v1/act", json=_payload("case-replay")).json()
+    first = _act_to_completion(client, _payload("case-replay"))
     second = client.post("/v1/act", json=_payload("case-replay")).json()
     # Replay applies nothing new; state is already committed, no duplicate.
     assert first["after_committed"] is True
@@ -81,29 +85,8 @@ def test_act_missing_or_1970_timestamp_never_commits(client):
 
 
 def test_status_endpoint_reports_waiting_and_blocking_state(client):
-    store = ActionStore(os.environ["ACTION_DB_PATH"])
-    try:
-        result = run_action_loop(
-            store=store,
-            record={
-                "correlation_id": "case-waiting",
-                "id": "case-waiting",
-                "evidence": {
-                    "ingested_at": datetime.now(timezone.utc).isoformat(),
-                    "triage_level": "NOW",
-                    "predicted_los_hours": 6,
-                    "bed_pressure_risk": "low",
-                    "er_state": {"available_beds": 3, "occupancy_pct": 70, "queue_length": 2},
-                },
-            },
-            safety_context=SafetyContext(
-                ingested_at=datetime.now(timezone.utc).isoformat(),
-                receiver_acknowledged=False,
-            ),
-        )
-        assert result.safety_decision == "WAIT_FOR_ACK"
-    finally:
-        store.close()
+    result = client.post("/v1/act", json=_payload("case-waiting")).json()
+    assert result["safety_decision"] == "WAIT_FOR_ACK"
 
     status = client.get("/v1/cases/case-waiting/status")
     assert status.status_code == 200
@@ -130,7 +113,7 @@ def test_public_caller_cannot_self_certify_safety(client, field, value):
 
 def test_status_exposes_versioned_trusted_safety_receipt(client):
     cid = "case-policy-receipt"
-    result = client.post("/v1/act", json=_payload(cid)).json()
+    result = _act_to_completion(client, _payload(cid))
     assert result["safety_decision"] == "ACT"
 
     status = client.get(f"/v1/cases/{cid}/status").json()
@@ -181,3 +164,20 @@ def test_derived_capacity_conflict_blocks_high_risk_action(client):
     conflict = status["latest_derived_facts"]["evidence_conflicts"]
     assert conflict["value"] == ["bed_pressure_low_vs_saturated_capacity"]
     assert conflict["source"] == "action-safety.v2.capacity_consistency_rules"
+
+
+def test_receiver_ack_is_separate_and_required_before_action(client):
+    cid = "case-independent-ack"
+    payload = _payload(cid)
+
+    waiting = client.post("/v1/act", json=payload).json()
+    assert waiting["safety_decision"] == "WAIT_FOR_ACK"
+    assert waiting["after_committed"] is None
+
+    ack = client.post(f"/v1/cases/{cid}/ack").json()
+    assert ack["acknowledged"] is True
+    assert ack["task_status"] == "acknowledged"
+
+    completed = client.post("/v1/act", json=payload).json()
+    assert completed["safety_decision"] == "ACT"
+    assert completed["after_committed"] is True

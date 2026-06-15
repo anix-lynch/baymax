@@ -52,13 +52,15 @@ copy the museum into the movie.
 
 ## Current Score
 
-Current controllable L2 maturity: **74/100** after Phase 2B.
+Current controllable L2 maturity: **76/100** after Phase 3A.
 
 The audited baseline was **66/100**. Phase 1 added four points by making the
 recommendation path fail before generation and planning. Phase 2A added three
 points by removing public safety self-certification and deriving action policy
 and ACK from trusted state. Phase 2B added one point by deriving operational
 conflict and evidence sufficiency from canonical evidence.
+Phase 3A added two points by requiring an independently invoked receiver ACK
+before public action execution.
 
 | Surface | Score | Current truth |
 |---|---:|---|
@@ -66,7 +68,7 @@ conflict and evidence sufficiency from canonical evidence.
 | Brain | 14/15 | Non-ACT stops early; canonical capacity conflict changes action policy |
 | Hands | 14/15 | Durable action, idempotency, retry, false-success detection |
 | Immune | 13/15 | Trusted conflict and evidence sufficiency stop actions; calibration remains |
-| Nerves | 7/10 | Durable status/ACK exists; receiver is not independently invoked |
+| Nerves | 9/10 | Receiver ACK is independently invoked; deadline/timeout remains |
 | Heart + Ethics | 5/10 | Principles exist; consent, authority, and follow-up closure are not runtime |
 | A/B/C live wiring | 6/15 | Eyes are real; online Nose remains a cheap rule gate |
 | Runtime/deployment | 6/10 | Live service/showroom exists; operational runtime is not fully unified |
@@ -176,26 +178,27 @@ quality upgrade, not a blocker for trusted operational safety derivation.
 
 ### Phase 3 - Independent Receiver And ACK Deadline
 
-Status: **PENDING**
+Status: **PARTIAL - INDEPENDENT RECEIVER COMPLETE; DEADLINE NEXT**
 
 Goal: turn ACK from a same-runtime second transition into independently
 observed ownership.
 
 Required changes:
 
-- Add a separately invoked receiver worker for Bed Ops / human review.
+- [x] Add a separately invoked receiver transition for Bed Ops.
 - Add ACK deadline and timeout transition.
 - Escalate stale ownership after the deadline.
 - Expose owner, deadline, wait time, and escalation through case status.
 
 Acceptance:
 
-- Creating work does not automatically ACK it.
-- Receiver invocation creates the ACK.
+- [x] Creating work does not automatically ACK it.
+- [x] Receiver invocation creates the ACK.
 - Missed deadline creates durable escalation.
 - Status endpoint reports waiting and timeout states.
 
-Expected maturity gain: **+3**.
+Earned maturity gain: **+2**. Final point requires deadline and timeout
+escalation.
 
 ### Phase 4 - Durable Care Follow-Up
 

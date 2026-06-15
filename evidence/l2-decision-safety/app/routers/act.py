@@ -26,7 +26,7 @@ from fastapi import APIRouter, HTTPException
 from action_engine.adapters import SyntheticFixtureAdapter
 from action_engine.loop import run_action_loop
 from action_engine.store import ActionStore
-from app.schemas import ActReceipt, ActRequest, CaseStatus
+from app.schemas import ActReceipt, ActRequest, CaseStatus, ReceiverAckReceipt
 
 router = APIRouter()
 
@@ -60,6 +60,7 @@ def act(req: ActRequest) -> ActReceipt:
             store=store,
             record=record,
             adapter=SyntheticFixtureAdapter(),
+            require_external_ack=True,
         )
         action = store.get_action(result.correlation_id)
         outcome = store.get_outcome(result.correlation_id)
@@ -100,3 +101,32 @@ def case_status(correlation_id: str) -> CaseStatus:
     if status is None:
         raise HTTPException(status_code=404, detail="case not found")
     return CaseStatus(**status)
+
+
+@router.post("/cases/{correlation_id}/ack", response_model=ReceiverAckReceipt)
+def receiver_ack(correlation_id: str) -> ReceiverAckReceipt:
+    """Separately invoked receiver transition; creating work cannot ACK it."""
+    store = ActionStore(_db_path())
+    try:
+        task = store.latest_action_task(correlation_id)
+        if task is None:
+            raise HTTPException(status_code=404, detail="action task not found")
+        moved = store.acknowledge_task(task["task_id"])
+        task = store.get_task(task["task_id"])
+        assert task is not None
+        acknowledged = moved or task["status"] == "acknowledged"
+        if moved:
+            store.log_event(correlation_id, "task_acknowledged", {
+                "task_id": task["task_id"],
+                "acked": True,
+                "receiver_invocation": "POST /v1/cases/{correlation_id}/ack",
+            })
+    finally:
+        store.close()
+    return ReceiverAckReceipt(
+        correlation_id=correlation_id,
+        task_id=task["task_id"],
+        owner=task["owner"],
+        acknowledged=acknowledged,
+        task_status=task["status"],
+    )

@@ -60,8 +60,9 @@ disagreement, and decision basis.
 
 ### ACK is durable but not independently observed
 
-The action loop creates a task and normally acknowledges it in the same runtime.
-This proves a second state transition, not a real remote receiver.
+The public action loop now waits until a separately invoked receiver endpoint
+ACKs the durable task. ACK is independently invoked, but still lacks a
+deadline and timeout escalation.
 
 ### Live-looking UI is primarily post-completion
 
@@ -104,3 +105,10 @@ live workflow awareness.
 
 Added durable safety decisions, waiting-for-ACK state, blocking reasons,
 confidence deltas, and the case status endpoint.
+
+### June 2026 - Independent receiver Phase 3A
+
+Public `/v1/act` now creates work and returns `WAIT_FOR_ACK` without changing
+state. `POST /v1/cases/{correlation_id}/ack` performs the separate durable
+receiver transition. Replaying `/v1/act` after ACK executes and verifies the
+outcome. ACK deadline and timeout escalation remain open.

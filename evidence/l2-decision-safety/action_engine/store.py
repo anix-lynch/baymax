@@ -307,6 +307,14 @@ class ActionStore:
         row = self.conn.execute("SELECT * FROM tasks WHERE task_id=?", (task_id,)).fetchone()
         return dict(row) if row else None
 
+    def latest_action_task(self, correlation_id: str) -> Optional[dict[str, Any]]:
+        row = self.conn.execute(
+            "SELECT * FROM tasks WHERE correlation_id=? AND kind='action' "
+            "ORDER BY created_at DESC LIMIT 1",
+            (correlation_id,),
+        ).fetchone()
+        return dict(row) if row else None
+
     def action_tasks_for(self, correlation_id: str) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             "SELECT * FROM tasks WHERE correlation_id=? AND kind='action' ORDER BY created_at",

@@ -222,6 +222,15 @@ class CaseStatus(BaseModel):
     latest_derived_facts: dict[str, Any] = Field(default_factory=dict)
 
 
+class ReceiverAckReceipt(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    correlation_id: str
+    task_id: str
+    owner: str
+    acknowledged: bool
+    task_status: str
+
+
 class HealthResponse(BaseModel):
     status: str
     service: str
