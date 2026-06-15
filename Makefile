@@ -1,19 +1,23 @@
 .PHONY: sync demo ui audit test clean
 
+# Baymax uses 3.10+ syntax (e.g. `int | None`). Default python3 must be >= 3.10.
+# Override on macOS if system python3 is 3.9: make test PYTHON=/opt/homebrew/bin/python3
+PYTHON ?= python3
+
 sync:
 	bash scripts/sync_sources.sh
 
 audit:
-	python -m baymax.audit
+	$(PYTHON) -m baymax.audit
 
 demo:
-	python -m baymax.demo
+	$(PYTHON) -m baymax.demo
 
 ui:
-	python -m http.server 8000
+	$(PYTHON) -m http.server 8000
 
 test:
-	PYTHONPATH=. pytest tests -q
+	PYTHONPATH=. $(PYTHON) -m pytest tests -q
 
 clean:
 	rm -rf .pytest_cache baymax/__pycache__ tests/__pycache__
