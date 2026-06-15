@@ -156,11 +156,42 @@ function play(caseId) {
   }, 650 * scene.steps.length + 250));
 }
 
+const ledgerLabels = {
+  nose: "👃 Nose", left_eye: "👁 Patient eye", right_eye: "👁 Drug eye",
+  brain: "🧠 Brain", brakes: "🛑 Brakes", nerves: "⚡ Nerves",
+  hands: "🤝 Hands", mouth: "🗣 Mouth", immune: "🛡 Immune",
+};
+
+function renderHonesty() {
+  const grid = document.querySelector("#honesty-ledger");
+  const headline = document.querySelector("#honesty-headline");
+  const claim = document.querySelector("#honesty-claim");
+  if (!grid || !audit || !audit.honesty_ledger) return;
+  const ledger = audit.honesty_ledger;
+  headline.textContent = `${ledger.headline_verdict} ships at weakest leaf`;
+  headline.classList.toggle("warning", ledger.headline_verdict !== "✅");
+  claim.textContent = ledger.headline_claim_allowed;
+  grid.innerHTML = Object.entries(ledger.organs).map(([id, organ]) => {
+    const weakest = id === ledger.weakest_load_bearing_organ ? " weakest" : "";
+    const note = organ.verdict === "✅" ? organ.claim_allowed : organ.hedge;
+    return `
+      <div class="ledger-cell${weakest}">
+        <div class="ledger-top">
+          <span class="ledger-verdict">${organ.verdict}</span>
+          <span class="ledger-organ">${ledgerLabels[id] || id}</span>
+          <span class="ledger-variant">${organ.capability_lane}</span>
+        </div>
+        <p class="ledger-claim">${note}</p>
+      </div>`;
+  }).join("");
+}
+
 async function loadAudit() {
   try {
     const response = await fetch("../outputs/baymax_audit.json");
     if (!response.ok) throw new Error("audit unavailable");
     audit = await response.json();
+    renderHonesty();
   } catch {
     receiptText.textContent = "ผมยังหา audit receipt ไม่เจอครับ แต่ผมยังหาอยู่";
   }

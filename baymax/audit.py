@@ -29,6 +29,80 @@ HIGH_RISK_TERMS = (
 MODERATE_TERMS = ("shortness of breath", "fever", "vomiting", "abdominal pain")
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 
+# Honesty law: every organ ships at the strength of its weakest load-bearing proof,
+# maps to exactly one capability lane, and may only claim the one sentence its proof
+# earns. A live gate must pass (else the verdict drops to RED); the maturity grade
+# then sets GREEN vs YELLOW. Numbers come from the live run, never from memory.
+GREEN, YELLOW, RED = "✅", "🟡", "❌"
+_GRADE_TIER = {"A": GREEN, "A-": GREEN, "B+": YELLOW, "B": YELLOW, "C": RED}
+
+# organ -> (capability lane, source repo, load_bearing, claim_allowed, hedge)
+ORGAN_LANE = {
+    "nose": {
+        "lane": "signal-routing",
+        "source_repo": "healthcare-signal-platform",
+        "load_bearing": True,
+        "claim_allowed": "routes cheap cases before expensive evidence using a committed five-signal batch proof",
+        "hedge": "per-case routing is a keyword safety gate; the evaluated ranker is batch-only, not served online",
+    },
+    "left_eye": {
+        "lane": "data-truth",
+        "source_repo": "healthcare-ai-data-engineer",
+        "load_bearing": True,
+        "claim_allowed": "scans the full 55,500-row encounter corpus with source-commit lineage",
+        "hedge": "encounters are synthetic, not real patient records",
+    },
+    "right_eye": {
+        "lane": "evidence-retrieval",
+        "source_repo": "healthcare-da",
+        "load_bearing": True,
+        "claim_allowed": "retrieves real openFDA adverse-event evidence by drug and reaction terms",
+        "hedge": "openFDA is a population safety signal only; it does not prove causality or a drug interaction",
+    },
+    "brain": {
+        "lane": "action-engine",
+        "source_repo": "healthcare-genai-engineer",
+        "load_bearing": True,
+        "claim_allowed": "records patient-only and cross-domain decisions separately and changes action policy on the same case",
+        "hedge": "decision-change quality is not yet evaluated on a large independent counterfactual set",
+    },
+    "brakes": {
+        "lane": "action-engine",
+        "source_repo": "healthcare-genai-engineer",
+        "load_bearing": True,
+        "claim_allowed": "blocks autonomous action when cross-domain evidence adds uncertainty, without inventing causality",
+        "hedge": "the policy matrix for stale, conflicting, missing, and adversarial evidence is not yet covered",
+    },
+    "nerves": {
+        "lane": "clinical-handoff",
+        "source_repo": "healthcare-forward-deployed-engineer",
+        "load_bearing": True,
+        "claim_allowed": "hands work to Bed Ops or clinician review and records a receiver ACK",
+        "hedge": "timeout, retry, and dead-letter recovery across separate services is not yet proven",
+    },
+    "hands": {
+        "lane": "action-engine",
+        "source_repo": "healthcare-genai-engineer",
+        "load_bearing": True,
+        "claim_allowed": "commits idempotent bounded actions to durable state and re-reads the outcome",
+        "hedge": "a second independently implemented tool target is not yet added",
+    },
+    "mouth": {
+        "lane": "explanation",
+        "source_repo": "healthcare-genai-engineer",
+        "load_bearing": False,
+        "claim_allowed": "explains why it acted or stopped and states the FAERS causality boundary",
+        "hedge": "explanations are not yet scored for completeness or unsupported claims",
+    },
+    "immune": {
+        "lane": "regression-guard",
+        "source_repo": "healthcare-genai-engineer",
+        "load_bearing": False,
+        "claim_allowed": "pins the counterfactual decision-change in CI so behavior cannot silently regress",
+        "hedge": "the regression suite does not yet span all organs and failure families",
+    },
+}
+
 
 def _repo(name: str) -> Path:
     path = SOURCES / REPOS[name]
@@ -418,6 +492,70 @@ def run_case(
     return result
 
 
+def _organ_live_gate(suite: dict[str, Any], organ: str) -> bool:
+    """Did this organ's claim actually hold in THIS run? (gates the verdict to RED)."""
+    traj = suite["trajectories"]
+    cross = traj["cross_domain_brake"]["brain_hands"]
+    bed = traj["capacity_bed_available"]["brain_hands"]
+    gates = {
+        "nose": traj["attention_skip"]["flow"] == ["nose"],
+        "left_eye": traj["capacity_bed_available"]["left_eye"]["rows_scanned"] == 55500,
+        "right_eye": traj["capacity_bed_available"]["right_eye"]["reports_scanned"] == 5000,
+        "brain": suite["decision_flip_proof"]["action_changed"]
+        and suite["immune_proof"]["behavior_changed"],
+        "brakes": cross["brakes"]["human_review_required"] and not cross["hands_executed"],
+        "nerves": cross["receiver_acknowledged"],
+        "hands": bed["outcome_verified"] and bool(bed["after_state"]["committed"]),
+        "mouth": "does not prove causality" in cross["mouth"],
+        "immune": suite["immune_proof"]["behavior_changed"]
+        and suite["decision_flip_proof"]["action_changed"],
+    }
+    return bool(gates[organ])
+
+
+def honesty_ledger(suite: dict[str, Any]) -> dict[str, Any]:
+    """Gate every organ's claim at the weakest load-bearing proof: each organ maps to
+    one capability lane and may only claim the sentence its live proof earns."""
+    grades = suite["dream_state_audit"]["organs"]
+    organs: dict[str, Any] = {}
+    for organ, meta in ORGAN_LANE.items():
+        # Eyes share one maturity grade in the dream-state audit.
+        grade = grades["eyes"]["grade"] if organ in ("left_eye", "right_eye") else grades[organ]["grade"]
+        gate_pass = _organ_live_gate(suite, organ)
+        verdict = _GRADE_TIER.get(grade, RED) if gate_pass else RED
+        organs[organ] = {
+            "verdict": verdict,
+            "capability_lane": meta["lane"],
+            "source_repo": meta["source_repo"],
+            "maturity_grade": grade,
+            "live_gate_passed": gate_pass,
+            "load_bearing": meta["load_bearing"],
+            "claim_allowed": meta["claim_allowed"],
+            "hedge": meta["hedge"],
+        }
+    rank = {GREEN: 2, YELLOW: 1, RED: 0}
+    load_bearing = {k: v for k, v in organs.items() if v["load_bearing"]}
+    weakest_key = min(load_bearing, key=lambda k: rank[load_bearing[k]["verdict"]])
+    weakest = load_bearing[weakest_key]
+    headline_verdict = weakest["verdict"]
+    return {
+        "law": (
+            "Baymax ships at the strength of its weakest load-bearing organ. "
+            "Each organ proves one capability lane and may only claim the sentence its "
+            "live proof earns; ❌ leaves are never claimed."
+        ),
+        "headline_verdict": headline_verdict,
+        "weakest_load_bearing_organ": weakest_key,
+        "headline_claim_allowed": (
+            f"Baymax proves the closed evidence-to-action loop end-to-end, "
+            f"but ships at {headline_verdict} — gated by {weakest_key.upper()} "
+            f"({weakest['capability_lane']}): {weakest['hedge']}."
+        ),
+        "organs": organs,
+        "lanes_proven": sorted({m["lane"] for m in ORGAN_LANE.values()}),
+    }
+
+
 def run_audit_suite() -> dict[str, Any]:
     """Three trajectories proving attention, cross-domain change, and action."""
     OUTPUTS.mkdir(parents=True, exist_ok=True)
@@ -461,7 +599,7 @@ def run_audit_suite() -> dict[str, Any]:
         er_state={"available_beds": 0, "occupancy_pct": 98, "queue_length": 12},
         db_path=paths["capacity_gridlock"],
     )
-    return {
+    suite: dict[str, Any] = {
         "audit_version": "baymax.v2",
         "one_line_truth": (
             "Baymax allocates attention, changes action policy when another domain "
@@ -578,6 +716,8 @@ def run_audit_suite() -> dict[str, Any]:
             },
         ],
     }
+    suite["honesty_ledger"] = honesty_ledger(suite)
+    return suite
 
 
 def main() -> None:

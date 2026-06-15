@@ -890,5 +890,112 @@
       "moment": "When brakes allow action, durable state changes and Baymax re-reads the outcome",
       "proof": "trajectories.capacity_bed_available.brain_hands"
     }
-  ]
+  ],
+  "honesty_ledger": {
+    "law": "Baymax ships at the strength of its weakest load-bearing organ. Each organ proves one capability lane and may only claim the sentence its live proof earns; \u274c leaves are never claimed.",
+    "headline_verdict": "\ud83d\udfe1",
+    "weakest_load_bearing_organ": "nose",
+    "headline_claim_allowed": "Baymax proves the closed evidence-to-action loop end-to-end, but ships at \ud83d\udfe1 \u2014 gated by NOSE (signal-routing): per-case routing is a keyword safety gate; the evaluated ranker is batch-only, not served online.",
+    "organs": {
+      "nose": {
+        "verdict": "\ud83d\udfe1",
+        "capability_lane": "signal-routing",
+        "source_repo": "healthcare-signal-platform",
+        "maturity_grade": "B",
+        "live_gate_passed": true,
+        "load_bearing": true,
+        "claim_allowed": "routes cheap cases before expensive evidence using a committed five-signal batch proof",
+        "hedge": "per-case routing is a keyword safety gate; the evaluated ranker is batch-only, not served online"
+      },
+      "left_eye": {
+        "verdict": "\u2705",
+        "capability_lane": "data-truth",
+        "source_repo": "healthcare-ai-data-engineer",
+        "maturity_grade": "A-",
+        "live_gate_passed": true,
+        "load_bearing": true,
+        "claim_allowed": "scans the full 55,500-row encounter corpus with source-commit lineage",
+        "hedge": "encounters are synthetic, not real patient records"
+      },
+      "right_eye": {
+        "verdict": "\u2705",
+        "capability_lane": "evidence-retrieval",
+        "source_repo": "healthcare-da",
+        "maturity_grade": "A-",
+        "live_gate_passed": true,
+        "load_bearing": true,
+        "claim_allowed": "retrieves real openFDA adverse-event evidence by drug and reaction terms",
+        "hedge": "openFDA is a population safety signal only; it does not prove causality or a drug interaction"
+      },
+      "brain": {
+        "verdict": "\u2705",
+        "capability_lane": "action-engine",
+        "source_repo": "healthcare-genai-engineer",
+        "maturity_grade": "A-",
+        "live_gate_passed": true,
+        "load_bearing": true,
+        "claim_allowed": "records patient-only and cross-domain decisions separately and changes action policy on the same case",
+        "hedge": "decision-change quality is not yet evaluated on a large independent counterfactual set"
+      },
+      "brakes": {
+        "verdict": "\u2705",
+        "capability_lane": "action-engine",
+        "source_repo": "healthcare-genai-engineer",
+        "maturity_grade": "A-",
+        "live_gate_passed": true,
+        "load_bearing": true,
+        "claim_allowed": "blocks autonomous action when cross-domain evidence adds uncertainty, without inventing causality",
+        "hedge": "the policy matrix for stale, conflicting, missing, and adversarial evidence is not yet covered"
+      },
+      "nerves": {
+        "verdict": "\ud83d\udfe1",
+        "capability_lane": "clinical-handoff",
+        "source_repo": "healthcare-forward-deployed-engineer",
+        "maturity_grade": "B+",
+        "live_gate_passed": true,
+        "load_bearing": true,
+        "claim_allowed": "hands work to Bed Ops or clinician review and records a receiver ACK",
+        "hedge": "timeout, retry, and dead-letter recovery across separate services is not yet proven"
+      },
+      "hands": {
+        "verdict": "\u2705",
+        "capability_lane": "action-engine",
+        "source_repo": "healthcare-genai-engineer",
+        "maturity_grade": "A",
+        "live_gate_passed": true,
+        "load_bearing": true,
+        "claim_allowed": "commits idempotent bounded actions to durable state and re-reads the outcome",
+        "hedge": "a second independently implemented tool target is not yet added"
+      },
+      "mouth": {
+        "verdict": "\ud83d\udfe1",
+        "capability_lane": "explanation",
+        "source_repo": "healthcare-genai-engineer",
+        "maturity_grade": "B+",
+        "live_gate_passed": true,
+        "load_bearing": false,
+        "claim_allowed": "explains why it acted or stopped and states the FAERS causality boundary",
+        "hedge": "explanations are not yet scored for completeness or unsupported claims"
+      },
+      "immune": {
+        "verdict": "\u2705",
+        "capability_lane": "regression-guard",
+        "source_repo": "healthcare-genai-engineer",
+        "maturity_grade": "A-",
+        "live_gate_passed": true,
+        "load_bearing": false,
+        "claim_allowed": "pins the counterfactual decision-change in CI so behavior cannot silently regress",
+        "hedge": "the regression suite does not yet span all organs and failure families"
+      }
+    },
+    "lanes_proven": [
+      "action-engine",
+      "clinical-handoff",
+      "data-truth",
+      "evidence-retrieval",
+      "explanation",
+      "regression-guard",
+      "signal-routing"
+    ]
+  }
 }

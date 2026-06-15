@@ -81,6 +81,28 @@ def test_immune_suite_pins_counterfactual_behavior():
     assert suite["decision_flip_proof"]["action_changed"] is True
 
 
+def test_honesty_ledger_gates_headline_at_weakest_load_bearing_leaf():
+    suite = run_audit_suite()
+    ledger = suite["honesty_ledger"]
+    # Every core capability lane is accounted for by at least one organ.
+    assert {"signal-routing", "data-truth", "evidence-retrieval", "action-engine",
+            "clinical-handoff"} <= set(ledger["lanes_proven"])
+    # The honesty law: headline ships at the weakest load-bearing organ's verdict.
+    rank = {"✅": 2, "🟡": 1, "❌": 0}
+    load_bearing = {k: v for k, v in ledger["organs"].items() if v["load_bearing"]}
+    weakest = min(rank[v["verdict"]] for v in load_bearing.values())
+    assert rank[ledger["headline_verdict"]] == weakest
+    assert ledger["weakest_load_bearing_organ"] in load_bearing
+    # ❌ leaves are never claimed: any organ that failed its live gate must be RED.
+    for organ in ledger["organs"].values():
+        if not organ["live_gate_passed"]:
+            assert organ["verdict"] == "❌"
+    # Each organ cites a real sibling source repo and one capability lane.
+    for organ in ledger["organs"].values():
+        assert organ["source_repo"]
+        assert organ["capability_lane"]
+
+
 def test_ui_story_is_bound_to_honest_proof():
     html = (ROOT / "ui" / "index.html").read_text(encoding="utf-8")
     script = (ROOT / "ui" / "app.js").read_text(encoding="utf-8")

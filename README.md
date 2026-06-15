@@ -77,6 +77,25 @@ The final receipt is `outputs/baymax_audit.json`. It contains three trajectories
 It also records exact source commits, organ grades, the solo-engineer A+ ceiling,
 and the remaining shortest path.
 
+## Honesty Ledger
+
+`outputs/baymax_audit.json` ends with a `honesty_ledger`: every organ maps to one
+capability lane, may only claim the one sentence its **live** proof earns, and Baymax
+ships at the strength of its **weakest load-bearing organ** — never above it.
+
+| Organ | Capability lane | Verdict gate |
+|---|---|---|
+| NOSE | signal-routing | per-case routing is a keyword gate; the evaluated ranker is batch-only |
+| Left eye | data-truth | 55,500 rows scanned this run |
+| Right eye | evidence-retrieval | 5,000 openFDA reports scanned; population signal, not causality |
+| Brain / Brakes / Hands | action-engine | decision change, autonomous block, and durable outcome re-read |
+| Nerves | clinical-handoff | receiver ACK proven; cross-service recovery not yet |
+| Mouth | explanation | states the FAERS causality boundary |
+
+A live gate that fails drops the organ to ❌, and ❌ leaves are never claimed.
+The headline verdict is the minimum verdict across load-bearing organs, pinned in
+CI by `tests/test_audit.py::test_honesty_ledger_gates_headline_at_weakest_load_bearing_leaf`.
+
 ## Organ Sources
 
 | Organ | Public source | What this repo audits |
