@@ -4,7 +4,7 @@
 
 ![Baymax changes its action when ER capacity changes](demo.gif)
 
-🔗 **Live:** deployed URL added after the final showroom gate
+🔗 **Live:** https://baymax-bice.vercel.app
 
 > “ผมไม่ได้ฉลาดเพราะมีอวัยวะเยอะ ผมฉลาดเพราะรู้ว่าควรใช้อวัยวะไหน
 > เมื่อไร และยอมเปลี่ยนใจเมื่ออีกมุมเปิดความจริงใหม่”
