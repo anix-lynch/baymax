@@ -43,10 +43,28 @@ def test_served_nose_eval_protects_serious_recall_and_measures_reduction():
 def test_retrieval_discovery_finds_unmentioned_heart_failure_precedent():
     result = retrieval_discovery()
     assert result["raw_query_missed_target"] is True
-    assert result["top_source_id"] == "L1-000162"
+    assert result["top_source_id"] == "L1-000497"
     assert "chronic heart failure history" in result["retrieved_evidence"]
     assert result["source_is_synthetic"] is True
     assert "does not diagnose" in result["safety_boundary"]
+
+
+def test_retrieval_discovery_carries_real_triage_and_disposition():
+    result = retrieval_discovery()
+    # Comorbidities the patient never mentioned are extracted from the retrieved record.
+    assert len(result["retrieved_evidence"]) >= 3
+    assert result["medications_on_record"], "medications should be parsed from the record"
+    assert result["prior_care"] and "discharged" in result["prior_care"].lower()
+    # Triage tier is derived from the real ESI classifier, not hardcoded.
+    rec = result["disposition_recommendation"]
+    assert rec["triage_tier"] in {"RED", "YELLOW", "GREEN"}
+    assert rec["recommended_care_setting"] == "medical_ward_admit"
+    # The bed action is a real durable commit that was re-read.
+    assert rec["bed_booking"]["outcome_verified"] is True
+    assert rec["bed_booking"]["after_state"] is not None
+    # Baymax speaks two ways from the same evidence.
+    assert "to_clinician" in result["dual_voice"]
+    assert "to_family" in result["dual_voice"]
 
 
 def test_full_baymax_path_reads_both_eyes_and_verifies_action(tmp_path):

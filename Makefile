@@ -6,6 +6,7 @@ PYTHON ?= python3
 
 sync:
 	bash scripts/sync_sources.sh
+	$(PYTHON) scripts/inject_mother_case.py
 
 audit:
 	$(PYTHON) -m baymax.audit

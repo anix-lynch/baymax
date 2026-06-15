@@ -178,3 +178,60 @@ h2 { font-size: 16px; letter-spacing: -.02em; }
   .retrieval-arrow { transform: rotate(90deg); text-align: center; }
   .finding-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Cross-domain lanes (meds + prior care) ─────────────────────────────── */
+.lanes { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
+.lane {
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--color-accent-bg-solid); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+  font-size: 13px; color: var(--color-text-primary);
+}
+.lane-label { font: 600 10px/1.4 var(--font-mono); letter-spacing: .08em; color: var(--color-text-muted); }
+
+/* ── Disposition result card ────────────────────────────────────────────── */
+.result-card {
+  margin-top: var(--space-4); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); background: var(--color-card-bg);
+  box-shadow: var(--shadow-card); padding: var(--space-4); display: grid; gap: var(--space-3);
+}
+.result-head { font: 600 11px/1.3 var(--font-mono); letter-spacing: .12em; color: var(--color-text-muted); }
+.result-head .sim {
+  margin-left: var(--space-2); padding: 2px 8px; border-radius: var(--radius-pill);
+  background: var(--color-surface-3); color: var(--color-text-secondary); font-size: 9px;
+}
+.triage-flip { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); font-size: 14px; color: var(--color-text-primary); }
+.triage-flip .flip-from { color: var(--color-text-muted); text-decoration: line-through; }
+.triage-flip .flip-to { font-weight: 600; }
+.triage-flip b { color: var(--color-text-muted); }
+.tier-pills { display: inline-flex; gap: 4px; margin-left: auto; }
+.tier {
+  padding: 3px 10px; border-radius: var(--radius-pill); font: 600 11px/1.2 var(--font-mono);
+  opacity: .35; border: 1px solid transparent;
+}
+.tier.green { background: var(--color-success-bg); color: var(--color-success); }
+.tier.yellow { background: var(--color-yellow-solid); color: #8a7a00; }
+.tier.red { background: var(--color-warning-bg); color: var(--color-warning); }
+.tier.on { opacity: 1; border-color: currentColor; }
+.result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-2); }
+.result-cell {
+  background: var(--color-surface-2); border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: 2px;
+}
+.result-cell .rc-label, .booking .rc-label, .voice .rc-label {
+  font: 600 10px/1.4 var(--font-mono); letter-spacing: .08em; color: var(--color-text-muted);
+}
+.result-cell strong { font-size: 14px; color: var(--color-text-primary); text-transform: capitalize; }
+.escalation {
+  background: var(--color-warning-bg); border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+  font-size: 13px; color: var(--color-warning);
+}
+.booking { background: var(--color-surface-2); border-radius: var(--radius-md); padding: var(--space-3); font-size: 13px; }
+.booking p { margin: 4px 0 0; color: var(--color-text-secondary); }
+.dual { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.voice { border-radius: var(--radius-md); padding: var(--space-3); }
+.voice.clinician { background: var(--color-accent-bg-solid); }
+.voice.family { background: var(--color-success-bg); }
+.voice p { margin: 4px 0 0; font-size: 13px; color: var(--color-text-primary); line-height: 1.5; }
+@media (max-width: 640px) { .dual { grid-template-columns: 1fr; } }

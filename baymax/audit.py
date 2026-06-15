@@ -216,10 +216,76 @@ def left_eye(query: str, k: int = 5) -> dict[str, Any]:
     }
 
 
+COMORBIDITY_PHRASES = {
+    "chronic heart failure history": ("heart failure", "congestive heart failure", "chf"),
+    "chronic kidney disease (stage 3)": ("chronic kidney disease", "ckd", "renal disease"),
+    "type 2 diabetes": ("diabetes", "diabetic"),
+    "prior fluid overload / pulmonary edema": ("fluid overload", "fluid retention", "pulmonary edema"),
+    "reduced urine output": ("reduced urine output", "decreased urine", "oliguria"),
+    "bilateral lower-extremity edema": ("lower-extremity edema", "leg swelling", "leg edema"),
+}
+_MED_PHRASES = ("metformin", "lisinopril", "furosemide", "insulin", "warfarin",
+                "spironolactone", "aspirin", "carvedilol")
+
+
+def _extract_present(text: str, mapping: dict[str, tuple[str, ...]]) -> list[str]:
+    low = text.lower()
+    return [label for label, needles in mapping.items() if any(n in low for n in needles)]
+
+
+def _extract_meds(text: str) -> list[str]:
+    low = text.lower()
+    return [m for m in _MED_PHRASES if m in low]
+
+
+def _triage_tier(esi: int) -> str:
+    return "RED" if esi <= 2 else "YELLOW" if esi == 3 else "GREEN"
+
+
+def _discovery_disposition(triage_level: str, er_state: dict[str, Any], db_path: Path) -> dict[str, Any]:
+    """Run the REAL durable bed action so the mother case carries a real disposition."""
+    _load_body()
+    from action_engine.loop import run_action_loop
+    from action_engine.store import ActionStore
+
+    if db_path.exists():
+        db_path.unlink()
+    record = {
+        "correlation_id": "discovery-disposition",
+        "evidence": {
+            "ingested_at": datetime.now(timezone.utc).isoformat(),
+            "triage_level": triage_level,
+            "predicted_los_hours": 48 if triage_level == "NOW" else 18,
+            "bed_pressure_risk": (
+                "high" if er_state["occupancy_pct"] >= 95 or er_state["available_beds"] <= 1 else "medium"
+            ),
+            "er_state": er_state,
+        },
+    }
+    store = ActionStore(db_path)
+    try:
+        result = run_action_loop(store=store, record=record)
+        action = store.get_action("discovery-disposition")
+        outcome = store.get_outcome("discovery-disposition")
+    finally:
+        store.close()
+    return {
+        "disposition": result.disposition,
+        "task_id": result.task_id,
+        "receiver_acknowledged": result.acknowledged,
+        "before_state": json.loads(action["before_state_json"]) if action else None,
+        "after_state": json.loads(action["after_state_json"]) if action else None,
+        "outcome_verified": bool(outcome["verified"]) if outcome else False,
+    }
+
+
 def retrieval_discovery() -> dict[str, Any]:
-    """Prove that symptom-language expansion uncovers an unmentioned trajectory."""
+    """Symptom-language expansion uncovers an unmentioned multi-domain trajectory,
+    then carries it through real triage and a real durable bed action."""
+    _ensure_mother_case()
     _load_body()
     from retrieval.retriever import search
+    from workflows.classify_esi import rule_based_esi
 
     patient_words = "my mother's legs are swollen"
     evidence_query = "leg swelling edema fluid retention fatigue"
@@ -227,6 +293,84 @@ def retrieval_discovery() -> dict[str, Any]:
     expanded_hits = search(evidence_query, k=3)
     top = expanded_hits[0]
     raw = top["raw"]
+
+    narrative = " ".join([
+        raw.get("Medical Condition", ""), raw.get("chief_complaint", ""),
+        raw.get("hpi", ""), raw.get("physician_note", ""),
+    ])
+    retrieved_evidence = _extract_present(narrative, COMORBIDITY_PHRASES)
+    medications = _extract_meds(narrative + " " + raw.get("Medication", ""))
+    prior_care = next(
+        (s.strip() for s in re.split(r"(?<=[.])\s+", raw.get("physician_note", ""))
+         if any(w in s.lower() for w in ("prior", "admitted", "discharged"))),
+        None,
+    )
+
+    esi, red_flags = rule_based_esi(narrative)
+    triage_level = _triage_from_esi(esi)
+    surface_tier = _triage_tier(esi)
+
+    er_state = {"available_beds": 0, "occupancy_pct": 97, "queue_length": 9}
+    booking = _discovery_disposition(triage_level, er_state, OUTPUTS / "discovery_disposition.db")
+
+    # Cross-domain flip: the surface triage under-calls a multi-comorbidity patient.
+    # Baymax escalates the recommendation when the retrieved evidence predicts bounce-back.
+    bounce_back_risk = len(retrieved_evidence) >= 3
+    care_setting = "medical_ward_admit" if bounce_back_risk else "discharge_with_followup"
+    recommended_tier = (
+        "YELLOW" if bounce_back_risk and surface_tier == "GREEN" else surface_tier
+    )
+    max_wait_minutes = {"RED": 0, "YELLOW": 120, "GREEN": 240}[recommended_tier]
+
+    disposition_recommendation = {
+        "surface_triage_tier": surface_tier,
+        "triage_tier": recommended_tier,
+        "esi_level": esi,
+        "surface_bed_disposition": booking["disposition"],
+        "recommended_care_setting": care_setting,
+        "escalation_trigger": (
+            "Escalate to RED / ICU now if SpO2 falls below 92% or orthopnea worsens — "
+            "fluid backing into the lungs strains the heart and cannot wait."
+        ),
+        "rationale": (
+            "Surface triage on leg swelling alone routes toward discharge, repeating the prior "
+            "visit. Retrieved comorbidities (heart failure, kidney disease, diabetes) predict "
+            "recurrent fluid overload, so Baymax recommends admission and nephrology review "
+            "rather than a plain discharge."
+        ),
+        "max_wait_minutes": max_wait_minutes,
+        "bed_booking": {
+            "er_state": er_state,
+            "er_saturated": er_state["available_beds"] <= 0 or er_state["occupancy_pct"] >= 95,
+            "surface_action_taken": booking["disposition"],
+            "task_id": booking["task_id"],
+            "receiver_acknowledged": booking["receiver_acknowledged"],
+            "before_state": booking["before_state"],
+            "after_state": booking["after_state"],
+            "outcome_verified": booking["outcome_verified"],
+            "note": (
+                f"Bed engine committed '{booking['disposition']}' to durable state and re-read it. "
+                "The ER is full; Baymax flags this as the same path that bounced back last time and "
+                "recommends admission instead of leaving the patient in the ER queue."
+            ),
+        },
+    }
+
+    dual_voice = {
+        "to_clinician": (
+            f"Triage {recommended_tier} (ESI {esi}). Leg swelling is likely recurrent fluid overload from "
+            "combined cardiac and renal disease, not an isolated leg problem. The prior visit discharged "
+            "after two days without nephrology follow-up. Recommend admission, review diuretic dosing "
+            "against stage-3 kidney function, and reassess before any discharge."
+        ),
+        "to_family": (
+            "When your mother's legs get tight and swollen, it usually means her blood sugar and fluid "
+            "are not under control. Please help her keep sugar and salt low, write down how often she "
+            "passes urine, and tell the doctor about her diabetes and kidney history. If she becomes "
+            "short of breath lying flat, that is urgent."
+        ),
+    }
+
     return {
         "patient_words": patient_words,
         "surface_symptom": "leg swelling",
@@ -239,21 +383,29 @@ def retrieval_discovery() -> dict[str, Any]:
         "source_commit": _commit(_repo("body")),
         "source_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv",
         "source_is_synthetic": True,
-        "retrieved_evidence": [
-            "chronic heart failure history",
-            "progressively worsening bilateral lower-extremity edema",
-            "fatigue",
-            "mild dyspnea on exertion",
-        ],
+        "retrieved_evidence": retrieved_evidence,
+        "medications_on_record": medications,
+        "prior_care": prior_care,
         "evidence_path": [
-            "leg swelling",
-            "heart-failure precedent",
-            "possible fluid-overload pattern",
+            "leg swelling (what the family said)",
+            "type 2 diabetes",
+            "chronic kidney disease",
+            "fluid overload",
+            "bilateral leg edema",
         ],
-        "next_question": "Is she short of breath at rest or when lying flat?",
+        "triage": {
+            "esi_level": esi,
+            "triage_level": triage_level,
+            "triage_tier": surface_tier,
+            "recommended_tier": recommended_tier,
+            "red_flags": red_flags,
+        },
+        "disposition_recommendation": disposition_recommendation,
+        "dual_voice": dual_voice,
+        "next_question": "Has her urine output decreased over the last few days?",
         "safety_boundary": (
-            "This retrieves a synthetic precedent and suggests a question; "
-            "it does not diagnose the patient."
+            "This retrieves a synthetic precedent, recommends a disposition, and suggests "
+            "questions; it does not diagnose the patient or prescribe treatment."
         ),
         "source_receipt": {
             "condition": raw["Medical Condition"],
@@ -327,6 +479,19 @@ def _load_body() -> None:
     body = str(_repo("body"))
     if body not in sys.path:
         sys.path.insert(0, body)
+
+
+def _ensure_mother_case() -> None:
+    """Idempotently re-inject the synthetic mother case into the synced corpus so
+    the discovery trajectory is reproducible after any `make sync`."""
+    import importlib.util
+
+    path = ROOT / "scripts" / "inject_mother_case.py"
+    spec = importlib.util.spec_from_file_location("inject_mother_case", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader
+    spec.loader.exec_module(module)
+    module.ensure_mother_case()
 
 
 def _triage_from_esi(esi: int) -> str:

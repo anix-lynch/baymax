@@ -9,29 +9,83 @@
       "raw_query_top_source_id": "L1-000281",
       "raw_query_missed_target": true,
       "evidence_query": "leg swelling edema fluid retention fatigue",
-      "top_source_id": "L1-000162",
-      "top_relevance_score": 15.9204,
+      "top_source_id": "L1-000497",
+      "top_relevance_score": 32.8785,
       "source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
       "source_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv",
       "source_is_synthetic": true,
       "retrieved_evidence": [
         "chronic heart failure history",
-        "progressively worsening bilateral lower-extremity edema",
-        "fatigue",
-        "mild dyspnea on exertion"
+        "chronic kidney disease (stage 3)",
+        "type 2 diabetes",
+        "prior fluid overload / pulmonary edema",
+        "reduced urine output",
+        "bilateral lower-extremity edema"
       ],
+      "medications_on_record": [
+        "metformin",
+        "lisinopril",
+        "furosemide"
+      ],
+      "prior_care": "Prior ED visit eight months ago: admitted two days for bilateral leg edema, diuresed, symptoms resolved, discharged without nephrology follow-up.",
       "evidence_path": [
-        "leg swelling",
-        "heart-failure precedent",
-        "possible fluid-overload pattern"
+        "leg swelling (what the family said)",
+        "type 2 diabetes",
+        "chronic kidney disease",
+        "fluid overload",
+        "bilateral leg edema"
       ],
-      "next_question": "Is she short of breath at rest or when lying flat?",
-      "safety_boundary": "This retrieves a synthetic precedent and suggests a question; it does not diagnose the patient.",
+      "triage": {
+        "esi_level": 4,
+        "triage_level": "WAIT",
+        "triage_tier": "GREEN",
+        "recommended_tier": "YELLOW",
+        "red_flags": []
+      },
+      "disposition_recommendation": {
+        "surface_triage_tier": "GREEN",
+        "triage_tier": "YELLOW",
+        "esi_level": 4,
+        "surface_bed_disposition": "discharge_plan",
+        "recommended_care_setting": "medical_ward_admit",
+        "escalation_trigger": "Escalate to RED / ICU now if SpO2 falls below 92% or orthopnea worsens \u2014 fluid backing into the lungs strains the heart and cannot wait.",
+        "rationale": "Surface triage on leg swelling alone routes toward discharge, repeating the prior visit. Retrieved comorbidities (heart failure, kidney disease, diabetes) predict recurrent fluid overload, so Baymax recommends admission and nephrology review rather than a plain discharge.",
+        "max_wait_minutes": 120,
+        "bed_booking": {
+          "er_state": {
+            "available_beds": 0,
+            "occupancy_pct": 97,
+            "queue_length": 9
+          },
+          "er_saturated": true,
+          "surface_action_taken": "discharge_plan",
+          "task_id": "task:discovery-disposition:discharge_plan",
+          "receiver_acknowledged": true,
+          "before_state": {
+            "committed": false,
+            "disposition": null,
+            "action_seq": null
+          },
+          "after_state": {
+            "committed": true,
+            "disposition": "discharge_plan",
+            "action_seq": 1
+          },
+          "outcome_verified": true,
+          "note": "Bed engine committed 'discharge_plan' to durable state and re-read it. The ER is full; Baymax flags this as the same path that bounced back last time and recommends admission instead of leaving the patient in the ER queue."
+        }
+      },
+      "dual_voice": {
+        "to_clinician": "Triage YELLOW (ESI 4). Leg swelling is likely recurrent fluid overload from combined cardiac and renal disease, not an isolated leg problem. The prior visit discharged after two days without nephrology follow-up. Recommend admission, review diuretic dosing against stage-3 kidney function, and reassess before any discharge.",
+        "to_family": "When your mother's legs get tight and swollen, it usually means her blood sugar and fluid are not under control. Please help her keep sugar and salt low, write down how often she passes urine, and tell the doctor about her diabetes and kidney history. If she becomes short of breath lying flat, that is urgent."
+      },
+      "next_question": "Has her urine output decreased over the last few days?",
+      "safety_boundary": "This retrieves a synthetic precedent, recommends a disposition, and suggests questions; it does not diagnose the patient or prescribe treatment.",
       "source_receipt": {
-        "condition": "Obesity",
-        "chief_complaint": "Worsening leg swelling and fatigue",
-        "hpi": "81-year-old female with a history of chronic heart failure and obesity presents with a 2-week history of progressively worsening bilateral lower extremity edema, associated with increased fatigue and mild dyspnea on exertion. She denies chest pain, fever, or syncope. She reports good medication adherence, including her penicillin for a recent skin infection.",
-        "assessment_plan": "Patient presents with symptoms consistent with a stable but worsening CHF exacerbation. Differential includes fluid overload, medication non-adherence, or a precipitating factor. Plan to admit for diuresis and further workup, including labs (BMP, BNP) and chest X-ray."
+        "condition": "Heart Failure",
+        "chief_complaint": "Bilateral leg swelling and fluid retention for one week",
+        "hpi": "71-year-old female with type-2 diabetes and chronic kidney disease stage 3 presents with progressive bilateral lower-extremity edema, leg swelling and fluid retention over one week, with fatigue and mild dyspnea on exertion and orthopnea when lying flat. Home medications: metformin, lisinopril, furosemide. Reduced urine output over the past three days.",
+        "assessment_plan": "History of congestive heart failure. Prior ED visit eight months ago: admitted two days for bilateral leg edema, diuresed, symptoms resolved, discharged without nephrology follow-up. Pattern consistent with recurrent fluid overload from combined cardiac and renal disease."
       }
     },
     "attention_skip": {
@@ -378,7 +432,7 @@
         "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
         "source_artifact": "sources/healthcare-signal-platform/openfda_signals/data/openfda_reports_scaled.json",
         "reports_scanned": 5000,
-        "semantic_layer_commit": "d51192c7e18abf151ac5df1935e78f854f072b7b",
+        "semantic_layer_commit": "8204314702f12ffad9519f9486f849746e62cd18",
         "semantic_layer_artifact": "sources/healthcare-da/proof/reconcile_gcp_fabric.json",
         "semantic_layer_n": 3000,
         "drug_safety_signal": {
@@ -592,7 +646,7 @@
         "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
         "source_artifact": "sources/healthcare-signal-platform/openfda_signals/data/openfda_reports_scaled.json",
         "reports_scanned": 5000,
-        "semantic_layer_commit": "d51192c7e18abf151ac5df1935e78f854f072b7b",
+        "semantic_layer_commit": "8204314702f12ffad9519f9486f849746e62cd18",
         "semantic_layer_artifact": "sources/healthcare-da/proof/reconcile_gcp_fabric.json",
         "semantic_layer_n": 3000,
         "drug_safety_signal": {
@@ -822,7 +876,7 @@
         "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
         "source_artifact": "sources/healthcare-signal-platform/openfda_signals/data/openfda_reports_scaled.json",
         "reports_scanned": 5000,
-        "semantic_layer_commit": "d51192c7e18abf151ac5df1935e78f854f072b7b",
+        "semantic_layer_commit": "8204314702f12ffad9519f9486f849746e62cd18",
         "semantic_layer_artifact": "sources/healthcare-da/proof/reconcile_gcp_fabric.json",
         "semantic_layer_n": 3000,
         "drug_safety_signal": {

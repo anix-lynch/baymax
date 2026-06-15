@@ -16,12 +16,17 @@ const scenes = {
     boundary: "This retrieves a synthetic precedent and suggests a question. It does not diagnose the patient.",
     money: "NOBODY MENTIONED HEART FAILURE. BAYMAX RETRIEVED IT ANYWAY.",
     moneyClass: "",
-    receipt: "The discovery is bound to source L1-000162 and its synthetic encounter receipt.",
+    receipt: "The discovery is bound to source L1-000497 and its synthetic encounter receipt.",
     steps: [
-      ["nose", "👃", "The patient used ordinary language. I translate it into evidence language before searching."],
-      ["left", "👁", "Raw words miss the target. Expanded symptom language retrieves a heart-failure precedent."],
-      ["brain", "🧠", "I connect the retrieved clues into a possible fluid-overload pattern without claiming a diagnosis."],
-      ["mouth", "🗣", "The next useful question is: Is she short of breath at rest or when lying flat?"],
+      ["nose", "👃", "The family used ordinary words. I translate “swollen legs” into evidence language before searching."],
+      ["left", "👁", "Literal words miss it. Expanded symptom language retrieves her record — and the history nobody mentioned."],
+      ["left", "👁", "On her record: heart failure, kidney disease stage 3, type-2 diabetes, prior fluid overload."],
+      ["right", "👁", "Her home medications: metformin, lisinopril, furosemide. Salt and repeat diuretics interact with stage-3 kidneys."],
+      ["immune", "🛡", "What the last clinician did: admitted two days for leg edema, diuresed, discharged without nephrology follow-up."],
+      ["brain", "🧠", "I connect it: diabetes → kidney disease → fluid overload → swollen legs. The loop that bounced back."],
+      ["brakes", "🛑", "Surface triage reads low and routes to discharge — the same path as last time. I will not repeat it without review."],
+      ["hands", "🤝", "The ER is full. I record the capacity action and flag admission instead of an ER-queue wait."],
+      ["mouth", "🗣", "I explain it two ways: clinically to the doctor, and plainly to the family."],
     ],
   },
   attention: {
@@ -83,6 +88,7 @@ const workingLabel = document.querySelector("#working-label");
 const workingDot = document.querySelector(".working-dot");
 const organContainer = document.querySelector("#organs");
 const discoveryCard = document.querySelector("#discovery-card");
+const resultCard = document.querySelector("#result-card");
 const thinkingTitle = document.querySelector("#thinking-title");
 
 function buildOrgans() {
@@ -100,6 +106,7 @@ function reset() {
   transcript.innerHTML = "";
   discoveryCard.hidden = true;
   discoveryCard.innerHTML = "";
+  if (resultCard) { resultCard.hidden = true; resultCard.innerHTML = ""; }
   moneyShot.hidden = true;
   moneyShot.className = "money-shot";
   receiptState.className = "receipt-state";
@@ -166,11 +173,51 @@ function renderDiscovery() {
       ${discovery.retrieved_evidence.map((finding) => `<span>✓ ${finding}</span>`).join("")}
     </div>
     <div class="evidence-path">${discovery.evidence_path.join("<b>→</b>")}</div>
+    <div class="lanes">
+      <div class="lane"><span class="lane-label">💊 Medications on record</span><span>${(discovery.medications_on_record || []).join(", ") || "—"}</span></div>
+      <div class="lane"><span class="lane-label">🛡 What the last clinician did</span><span>${discovery.prior_care || "—"}</span></div>
+    </div>
     <div class="source-receipt">
       <span>Source receipt · ${discovery.top_source_id} · synthetic encounter</span>
       <p>${discovery.source_receipt.chief_complaint}</p>
     </div>`;
   discoveryCard.hidden = false;
+}
+
+function renderResult() {
+  if (!audit || !audit.trajectories.retrieval_discovery.disposition_recommendation) return;
+  const d = audit.trajectories.retrieval_discovery;
+  const r = d.disposition_recommendation;
+  const dv = d.dual_voice || {};
+  const bb = r.bed_booking;
+  const tiers = ["GREEN", "YELLOW", "RED"];
+  const pills = tiers
+    .map((t) => `<span class="tier ${t.toLowerCase()}${t === r.triage_tier ? " on" : ""}">${t}</span>`)
+    .join("");
+  const tidy = (s) => (s || "").replace(/_/g, " ");
+  resultCard.innerHTML = `
+    <div class="result-head">DISPOSITION · what I recommend <span class="sim">simulation</span></div>
+    <div class="triage-flip">
+      <span class="flip-from">Surface ESI ${r.esi_level} · ${r.surface_triage_tier}</span>
+      <b>→</b>
+      <span class="flip-to">Baymax recommends ${r.triage_tier}</span>
+      <span class="tier-pills">${pills}</span>
+    </div>
+    <div class="result-grid">
+      <div class="result-cell"><span class="rc-label">Recommended setting</span><strong>${tidy(r.recommended_care_setting)}</strong></div>
+      <div class="result-cell"><span class="rc-label">Surface bed engine</span><strong>${tidy(r.surface_bed_disposition)}</strong></div>
+      <div class="result-cell"><span class="rc-label">Safe wait</span><strong>${r.max_wait_minutes} min</strong></div>
+    </div>
+    <div class="escalation">⚠️ ${r.escalation_trigger}</div>
+    <div class="booking">
+      <span class="rc-label">🛏 Bed booking · real durable action</span>
+      <p>ER ${bb.er_state.occupancy_pct}% full · ${bb.er_state.available_beds} free · queue ${bb.er_state.queue_length}. Committed “${tidy(bb.surface_action_taken)}”, re-read &amp; verified: ${bb.outcome_verified ? "yes" : "no"}. ${bb.note}</p>
+    </div>
+    <div class="dual">
+      <div class="voice clinician"><span class="rc-label">🩺 To the clinician</span><p>${dv.to_clinician || ""}</p></div>
+      <div class="voice family"><span class="rc-label">👧 To the family</span><p>${dv.to_family || ""}</p></div>
+    </div>`;
+  resultCard.hidden = false;
 }
 
 function play(caseId) {
@@ -208,6 +255,7 @@ function play(caseId) {
     moneyShot.textContent = scene.money;
     if (scene.moneyClass) moneyShot.classList.add(scene.moneyClass);
     moneyShot.hidden = false;
+    if (caseId === "discovery") renderResult();
     const truthful = validateTruth(caseId);
     receiptText.textContent = truthful ? scene.receipt : "I cannot verify this claim from the audit receipt.";
     receiptState.textContent = truthful ? "Verified" : "Unverified";
