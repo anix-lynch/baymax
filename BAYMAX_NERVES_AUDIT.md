@@ -60,9 +60,9 @@ disagreement, and decision basis.
 
 ### ACK is durable but not independently observed
 
-The public action loop now waits until a separately invoked receiver endpoint
-ACKs the durable task. ACK is independently invoked, but still lacks a
-deadline and timeout escalation.
+The public action loop waits until a separately invoked receiver endpoint ACKs
+the durable task. Every action task now has an ACK deadline; missed ownership
+becomes a durable timeout escalation and late ACK is rejected.
 
 ### Live-looking UI is primarily post-completion
 
@@ -112,3 +112,10 @@ Public `/v1/act` now creates work and returns `WAIT_FOR_ACK` without changing
 state. `POST /v1/cases/{correlation_id}/ack` performs the separate durable
 receiver transition. Replaying `/v1/act` after ACK executes and verifies the
 outcome. ACK deadline and timeout escalation remain open.
+
+### June 2026 - ACK deadline and timeout Phase 3B
+
+Action tasks now persist `ack_deadline_at`. Status reads expire overdue tasks,
+move ownership to `charge_nurse_review_queue`, and expose deadline, wait time,
+blocking reason, `HUMAN_REVIEW`, and `RECEIVER_ACK_TIMEOUT`. A late receiver
+ACK returns HTTP 409, and replay cannot execute the timed-out action.

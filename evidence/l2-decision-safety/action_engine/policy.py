@@ -153,6 +153,7 @@ def derive_pre_action(evidence: CanonicalEvidence, disposition: str) -> SafetyDe
 def derive_ack_state(evidence: CanonicalEvidence, task: dict[str, Any] | None) -> SafetyDerivation:
     """Derive receiver ACK from the durable task row, never from the request."""
     acknowledged = bool(task and task["status"] == "acknowledged")
+    timed_out = bool(task and task["status"] == "timed_out")
     facts = {
         "freshness": {
             "value": evidence.ingested_at,
@@ -163,12 +164,14 @@ def derive_ack_state(evidence: CanonicalEvidence, task: dict[str, Any] | None) -
             "source": "durable_store.tasks.status",
         },
         "task_id": task["task_id"] if task else None,
+        "ack_deadline_at": task["ack_deadline_at"] if task else None,
         "caller_safety_overrides_used": False,
     }
     return SafetyDerivation(
         context=SafetyContext(
             ingested_at=evidence.ingested_at,
             receiver_acknowledged=acknowledged,
+            receiver_ack_timed_out=timed_out,
             current_stage="ack_verification",
         ),
         facts=facts,

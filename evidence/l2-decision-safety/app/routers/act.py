@@ -108,9 +108,11 @@ def receiver_ack(correlation_id: str) -> ReceiverAckReceipt:
     """Separately invoked receiver transition; creating work cannot ACK it."""
     store = ActionStore(_db_path())
     try:
-        task = store.latest_action_task(correlation_id)
+        task = store.expire_overdue_action_task(correlation_id)
         if task is None:
             raise HTTPException(status_code=404, detail="action task not found")
+        if task["status"] == "timed_out":
+            raise HTTPException(status_code=409, detail="receiver acknowledgement deadline expired")
         moved = store.acknowledge_task(task["task_id"])
         task = store.get_task(task["task_id"])
         assert task is not None

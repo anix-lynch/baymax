@@ -22,6 +22,7 @@ class SafetyContext:
     action_risk: Literal["low", "medium", "high"] = "low"
     reversible: bool = True
     receiver_acknowledged: bool | None = None
+    receiver_ack_timed_out: bool = False
     current_stage: str = "safety_review"
 
 
@@ -93,6 +94,13 @@ def evaluate_safety(
         return SafetyVerdict(
             decision, code, "Confidence is below the direct-recommendation threshold.",
             "additional_evidence_received", context.confidence_before, context.confidence_after,
+            context.current_stage,
+        )
+    if context.receiver_ack_timed_out:
+        return SafetyVerdict(
+            "HUMAN_REVIEW", "RECEIVER_ACK_TIMEOUT",
+            "The assigned receiver missed the acknowledgement deadline.",
+            "human_review_resolved", context.confidence_before, context.confidence_after,
             context.current_stage,
         )
     if context.receiver_acknowledged is False:

@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -56,8 +56,9 @@ CREATE TABLE IF NOT EXISTS tasks (
     kind            TEXT NOT NULL,           -- action | escalation
     owner           TEXT NOT NULL,
     idempotency_key TEXT NOT NULL,
-    status          TEXT NOT NULL,           -- created | acknowledged
+    status          TEXT NOT NULL,           -- created | acknowledged | timed_out
     created_at      TEXT NOT NULL,
+    ack_deadline_at TEXT,
     acknowledged_at TEXT
 );
 
@@ -144,6 +145,7 @@ class ActionStore:
         self.conn = sqlite3.connect(self.db_path)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
+        self._ensure_column("tasks", "ack_deadline_at", "TEXT")
         self._ensure_column("safety_decisions", "policy_version", "TEXT")
         self._ensure_column("safety_decisions", "derived_facts_json", "TEXT")
         self.conn.commit()
@@ -200,6 +202,7 @@ class ActionStore:
         return dict(row) if row else None
 
     def case_status(self, correlation_id: str) -> Optional[dict[str, Any]]:
+        self.expire_overdue_action_task(correlation_id)
         events = self.events_for(correlation_id)
         if not events:
             return None
@@ -224,6 +227,7 @@ class ActionStore:
             "decided": "task_created",
             "task_created": "task_acknowledged",
             "waiting_for_ack": "task_acknowledged",
+            "ack_timeout_escalated": "human_review_resolved",
             "task_acknowledged": "action_succeeded",
             "action_attempt_failed": "action_retry_scheduled",
             "action_retry_scheduled": "action_succeeded",
@@ -232,7 +236,10 @@ class ActionStore:
             "outcome_verified": "complete",
         }
         blocking_reason = None
-        if safety and safety["decision"] != "ACT":
+        ack_timed_out = bool(task and task["status"] == "timed_out")
+        if ack_timed_out and escalation:
+            blocking_reason = escalation["reason"]
+        elif safety and safety["decision"] != "ACT":
             blocking_reason = safety["blocking_reason"]
         elif escalation:
             blocking_reason = escalation["reason"]
@@ -249,10 +256,17 @@ class ActionStore:
             "blocking_reason": blocking_reason,
             "confidence_before": safety["confidence_before"] if safety else None,
             "confidence_after": safety["confidence_after"] if safety else None,
-            "latest_safety_decision": safety["decision"] if safety else None,
-            "latest_reason_code": safety["reason_code"] if safety else None,
+            "latest_safety_decision": "HUMAN_REVIEW" if ack_timed_out else safety["decision"] if safety else None,
+            "latest_reason_code": "RECEIVER_ACK_TIMEOUT" if ack_timed_out else safety["reason_code"] if safety else None,
             "latest_policy_version": safety["policy_version"] if safety else None,
             "latest_derived_facts": json.loads(safety["derived_facts_json"] or "{}") if safety else {},
+            "ack_deadline_at": task["ack_deadline_at"] if task else None,
+            "ack_wait_seconds": (
+                max(0, int((datetime.now(timezone.utc) - datetime.fromisoformat(
+                    task["created_at"].replace("Z", "+00:00")
+                )).total_seconds()))
+                if task and task["status"] in {"created", "timed_out"} else None
+            ),
         }
 
     # ── cases / decisions ───────────────────────────────────────────────────
@@ -281,12 +295,13 @@ class ActionStore:
 
     # ── tasks (durable work + receiver ACK) ─────────────────────────────────
     def create_task(self, task_id: str, correlation_id: str, kind: str, owner: str,
-                    idempotency_key: str) -> None:
+                    idempotency_key: str, ack_deadline_seconds: int = 300) -> None:
+        deadline = (datetime.now(timezone.utc) + timedelta(seconds=ack_deadline_seconds)).isoformat()
         self.conn.execute(
             "INSERT OR IGNORE INTO tasks "
-            "(task_id, correlation_id, kind, owner, idempotency_key, status, created_at) "
-            "VALUES (?,?,?,?,?, 'created', ?)",
-            (task_id, correlation_id, kind, owner, idempotency_key, _now()),
+            "(task_id, correlation_id, kind, owner, idempotency_key, status, created_at, ack_deadline_at) "
+            "VALUES (?,?,?,?,?, 'created', ?, ?)",
+            (task_id, correlation_id, kind, owner, idempotency_key, _now(), deadline),
         )
         self.conn.commit()
 
@@ -314,6 +329,33 @@ class ActionStore:
             (correlation_id,),
         ).fetchone()
         return dict(row) if row else None
+
+    def expire_overdue_action_task(self, correlation_id: str) -> Optional[dict[str, Any]]:
+        task = self.latest_action_task(correlation_id)
+        if not task or task["status"] != "created" or not task["ack_deadline_at"]:
+            return task
+        deadline = datetime.fromisoformat(task["ack_deadline_at"].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) <= deadline:
+            return task
+        cur = self.conn.execute(
+            "UPDATE tasks SET status='timed_out' WHERE task_id=? AND status='created'",
+            (task["task_id"],),
+        )
+        self.conn.commit()
+        if cur.rowcount:
+            self.create_escalation(
+                escalation_id=f"esc:ack_timeout:{correlation_id}",
+                correlation_id=correlation_id,
+                reason="Receiver acknowledgement deadline expired.",
+                owner="charge_nurse_review_queue",
+                attempts_used=0,
+            )
+            self.log_event(correlation_id, "ack_timeout_escalated", {
+                "task_id": task["task_id"],
+                "ack_deadline_at": task["ack_deadline_at"],
+                "owner": "charge_nurse_review_queue",
+            })
+        return self.latest_action_task(correlation_id)
 
     def action_tasks_for(self, correlation_id: str) -> list[dict[str, Any]]:
         rows = self.conn.execute(

@@ -81,6 +81,7 @@ def run_action_loop(
     sleep: Callable[[float], None] | None = None,
     safety_context: SafetyContext | None = None,
     require_external_ack: bool = False,
+    ack_deadline_seconds: int = 300,
 ) -> LoopResult:
     """Process one source record through the full durable action loop.
 
@@ -202,10 +203,13 @@ def run_action_loop(
     task_id = f"task:{idem}"
 
     # ── Coordination: durable task + separate receiver ACK ──────────────────
-    store.create_task(task_id, correlation_id, kind="action", owner="bed_ops_worker", idempotency_key=idem)
+    store.create_task(
+        task_id, correlation_id, kind="action", owner="bed_ops_worker",
+        idempotency_key=idem, ack_deadline_seconds=ack_deadline_seconds,
+    )
     store.log_event(correlation_id, "task_created", {"task_id": task_id, "idempotency_key": idem})
     if require_external_ack:
-        ack_derivation = derive_ack_state(evidence, store.get_task(task_id))
+        ack_derivation = derive_ack_state(evidence, store.expire_overdue_action_task(correlation_id))
         ack_verdict = evaluate_safety(ack_derivation.context)
         store.record_safety_decision(
             correlation_id, ack_verdict,
@@ -219,7 +223,9 @@ def run_action_loop(
             return LoopResult(
                 correlation_id=correlation_id, accepted=True, blocked_reason=[ack_verdict.reason_code],
                 disposition=disposition, task_id=task_id, acknowledged=False, action=None,
-                outcome=None, escalation_id=None, safety_decision=ack_verdict.decision,
+                outcome=None,
+                escalation_id=f"esc:ack_timeout:{correlation_id}" if ack_verdict.reason_code == "RECEIVER_ACK_TIMEOUT" else None,
+                safety_decision=ack_verdict.decision,
                 safety_reason_code=ack_verdict.reason_code,
             )
     if safety_context is not None and safety_context.receiver_acknowledged is False:

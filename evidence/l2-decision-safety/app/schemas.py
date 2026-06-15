@@ -220,6 +220,8 @@ class CaseStatus(BaseModel):
     latest_reason_code: str | None = None
     latest_policy_version: str | None = None
     latest_derived_facts: dict[str, Any] = Field(default_factory=dict)
+    ack_deadline_at: str | None = None
+    ack_wait_seconds: int | None = Field(None, ge=0)
 
 
 class ReceiverAckReceipt(BaseModel):

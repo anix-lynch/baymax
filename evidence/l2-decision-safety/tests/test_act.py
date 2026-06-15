@@ -6,7 +6,7 @@ the service actually acted — and replaying the same correlation_id is
 idempotent (no duplicate side effect).
 """
 from __future__ import annotations
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import os
 import pytest
 from fastapi.testclient import TestClient
@@ -95,6 +95,8 @@ def test_status_endpoint_reports_waiting_and_blocking_state(client):
     assert data["next_expected_event"] == "task_acknowledged"
     assert data["latest_reason_code"] == "RECEIVER_ACK_PENDING"
     assert data["blocking_reason"]
+    assert data["ack_deadline_at"]
+    assert data["ack_wait_seconds"] >= 0
 
 
 @pytest.mark.parametrize("field,value", [
@@ -181,3 +183,36 @@ def test_receiver_ack_is_separate_and_required_before_action(client):
     completed = client.post("/v1/act", json=payload).json()
     assert completed["safety_decision"] == "ACT"
     assert completed["after_committed"] is True
+
+
+def test_ack_deadline_timeout_escalates_and_late_ack_is_rejected(client):
+    cid = "case-ack-timeout"
+    payload = _payload(cid)
+    waiting = client.post("/v1/act", json=payload).json()
+    assert waiting["safety_decision"] == "WAIT_FOR_ACK"
+
+    store = ActionStore(os.environ["ACTION_DB_PATH"])
+    try:
+        expired = (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat()
+        store.conn.execute(
+            "UPDATE tasks SET ack_deadline_at=? WHERE correlation_id=?",
+            (expired, cid),
+        )
+        store.conn.commit()
+    finally:
+        store.close()
+
+    status = client.get(f"/v1/cases/{cid}/status").json()
+    assert status["current_stage"] == "ack_timeout_escalated"
+    assert status["current_owner"] == "charge_nurse_review_queue"
+    assert status["latest_safety_decision"] == "HUMAN_REVIEW"
+    assert status["latest_reason_code"] == "RECEIVER_ACK_TIMEOUT"
+    assert status["blocking_reason"] == "Receiver acknowledgement deadline expired."
+
+    late_ack = client.post(f"/v1/cases/{cid}/ack")
+    assert late_ack.status_code == 409
+
+    replay = client.post("/v1/act", json=payload).json()
+    assert replay["safety_decision"] == "HUMAN_REVIEW"
+    assert replay["safety_reason_code"] == "RECEIVER_ACK_TIMEOUT"
+    assert replay["after_committed"] is None
