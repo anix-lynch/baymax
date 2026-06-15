@@ -235,3 +235,8 @@ h2 { font-size: 16px; letter-spacing: -.02em; }
 .voice.family { background: var(--color-success-bg); }
 .voice p { margin: 4px 0 0; font-size: 13px; color: var(--color-text-primary); line-height: 1.5; }
 @media (max-width: 640px) { .dual { grid-template-columns: 1fr; } }
+
+.provenance {
+  font-size: 12px; color: var(--color-text-muted); line-height: 1.5;
+  border-top: 1px dashed var(--color-border); padding-top: var(--space-2);
+}

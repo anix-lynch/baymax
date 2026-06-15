@@ -12,7 +12,7 @@ const organs = [
 
 const scenes = {
   discovery: {
-    patient: "Patient said: “My mother’s legs are swollen.”",
+    patient: "Daughter at intake: “My mother’s legs are swollen.” · Patient: the mother, 71F",
     boundary: "This retrieves a synthetic precedent and suggests a question. It does not diagnose the patient.",
     money: "NOBODY MENTIONED HEART FAILURE. BAYMAX RETRIEVED IT ANYWAY.",
     moneyClass: "",
@@ -216,7 +216,8 @@ function renderResult() {
     <div class="dual">
       <div class="voice clinician"><span class="rc-label">🩺 To the clinician</span><p>${dv.to_clinician || ""}</p></div>
       <div class="voice family"><span class="rc-label">👧 To the family</span><p>${dv.to_family || ""}</p></div>
-    </div>`;
+    </div>
+    ${d.corpus_augmentation ? `<div class="provenance">🔗 Lineage: ${d.corpus_augmentation.synthetic_rows_added} synthetic row (${d.corpus_augmentation.injected_case_id}, marked + holdout) added locally and disclosed — not in the upstream commit. Downstream index/Vertex rebuilds must filter it before non-demo use.</div>` : ""}`;
   resultCard.hidden = false;
 }
 

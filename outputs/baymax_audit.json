@@ -3,9 +3,20 @@
   "one_line_truth": "Baymax allocates attention, changes action policy when another domain adds risk, and verifies bounded actions when brakes allow them.",
   "trajectories": {
     "retrieval_discovery": {
+      "reporter": "adult child at intake (patient is the mother)",
       "patient_words": "my mother's legs are swollen",
       "surface_symptom": "leg swelling",
       "retrieval_method": "BM25 over enriched synthetic encounter narratives",
+      "corpus_augmentation": {
+        "augmented": true,
+        "synthetic_rows_added": 1,
+        "injected_case_id": "L1-000497",
+        "row_marker": "SYNTHETIC-MOTHER-EDEMA",
+        "holdout": true,
+        "excluded_from_labelled_eval": true,
+        "present_in_upstream_commit": false,
+        "downstream_warning": "Local augmentation only. Dense/Vertex index rebuilds from this corpus will include the marked synthetic row; filter by holdout==1 or the row marker before any non-demo use. The upstream L1 source-of-truth was not modified."
+      },
       "raw_query_top_source_id": "L1-000281",
       "raw_query_missed_target": true,
       "evidence_query": "leg swelling edema fluid retention fatigue",

@@ -282,7 +282,7 @@ def _discovery_disposition(triage_level: str, er_state: dict[str, Any], db_path:
 def retrieval_discovery() -> dict[str, Any]:
     """Symptom-language expansion uncovers an unmentioned multi-domain trajectory,
     then carries it through real triage and a real durable bed action."""
-    _ensure_mother_case()
+    injected_case_id = _ensure_mother_case()
     _load_body()
     from retrieval.retriever import search
     from workflows.classify_esi import rule_based_esi
@@ -372,9 +372,24 @@ def retrieval_discovery() -> dict[str, Any]:
     }
 
     return {
+        "reporter": "adult child at intake (patient is the mother)",
         "patient_words": patient_words,
         "surface_symptom": "leg swelling",
         "retrieval_method": "BM25 over enriched synthetic encounter narratives",
+        "corpus_augmentation": {
+            "augmented": True,
+            "synthetic_rows_added": 1,
+            "injected_case_id": injected_case_id,
+            "row_marker": "SYNTHETIC-MOTHER-EDEMA",
+            "holdout": True,
+            "excluded_from_labelled_eval": True,
+            "present_in_upstream_commit": False,
+            "downstream_warning": (
+                "Local augmentation only. Dense/Vertex index rebuilds from this corpus will "
+                "include the marked synthetic row; filter by holdout==1 or the row marker "
+                "before any non-demo use. The upstream L1 source-of-truth was not modified."
+            ),
+        },
         "raw_query_top_source_id": raw_hits[0]["case_id"],
         "raw_query_missed_target": raw_hits[0]["case_id"] != top["case_id"],
         "evidence_query": evidence_query,
@@ -481,9 +496,10 @@ def _load_body() -> None:
         sys.path.insert(0, body)
 
 
-def _ensure_mother_case() -> None:
+def _ensure_mother_case() -> str:
     """Idempotently re-inject the synthetic mother case into the synced corpus so
-    the discovery trajectory is reproducible after any `make sync`."""
+    the discovery trajectory is reproducible after any `make sync`. Returns the
+    synthetic case_id so the lineage receipt can disclose the augmentation."""
     import importlib.util
 
     path = ROOT / "scripts" / "inject_mother_case.py"
@@ -491,7 +507,7 @@ def _ensure_mother_case() -> None:
     module = importlib.util.module_from_spec(spec)
     assert spec.loader
     spec.loader.exec_module(module)
-    module.ensure_mother_case()
+    return module.ensure_mother_case()
 
 
 def _triage_from_esi(esi: int) -> str:
