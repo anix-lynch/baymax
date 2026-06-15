@@ -1,23 +1,23 @@
 # 🚑 B A Y M A X
 
-**ER intern ที่ไม่เหนื่อย ไม่ลืม ไม่อายที่จะถาม**
+**An evidence-to-action ER nurse assistant simulation**
 
 ![Baymax changes its action when ER capacity changes](demo.gif)
 
 🔗 **Live:** https://baymax-bice.vercel.app
 
-> “ผมไม่ได้ฉลาดเพราะมีอวัยวะเยอะ ผมฉลาดเพราะรู้ว่าควรใช้อวัยวะไหน
-> เมื่อไร และยอมเปลี่ยนใจเมื่ออีกมุมเปิดความจริงใหม่”
+> Patient said: “My mother’s legs are swollen.”
+> Baymax retrieved the heart-failure precedent nobody mentioned.
 
 Baymax is not impressive because it has more data. It is impressive when
 another perspective changes what it decides to do.
 
 ```text
          👁 Patient world      👁 Drug world
-          "เคสนี้เหมือนอะไร"     "มีอะไรซ่อนอยู่ไหม"
+          "What is similar?"   "What is hidden?"
                 \              /
                  └──🧠 Brain──┘
-        👃 Nose ──┤ เปลี่ยน action เพราะมุมมองเปลี่ยน
+        👃 Nose ──┤ changes action when perspective changes
                    ↓
               🛑 Brakes → ⚡ Nerves → 🤝 Hands → 🛡 Verify
 ```
@@ -34,22 +34,29 @@ Open `http://localhost:8000/ui/`. The live surface reads the generated audit
 receipt, narrates what Baymax noticed, admits uncertainty, shows what acted or
 stopped, and only claims verification when the receipt proves it.
 
-## Three Golden Cases
+## Four Golden Cases
 
 ```text
-CASE 1 · ATTENTION FLIP
+CASE 1 · RETRIEVAL DISCOVERY
+"My mother's legs are swollen"
+→ raw words miss the target
+→ evidence-language query retrieves a CHF precedent
+→ Baymax surfaces unmentioned evidence before answering
+→ next question: short of breath at rest or when lying flat?
+
+CASE 2 · ATTENTION FLIP
 routine medication refill
 → served NOSE assigns ESI-attention tier 4
 → expensive eyes stay closed
 → no action attempted
 
-CASE 2 · DECISION FLIP
+CASE 3 · DECISION FLIP
 same critical chest-pain patient
 → bed available: assign_bed
 → ER gridlock: divert
 → capacity perspective changes the action
 
-CASE 3 · BRAKE SAVE
+CASE 4 · BRAKE SAVE
 abdominal pain after Ibuprofen
 → patient-only: discharge_plan
 → drug eye: 16/17 exact-Ibuprofen reports marked serious
@@ -58,7 +65,7 @@ abdominal pain after Ibuprofen
 → clinician-review nerve receives and ACKs the case
 ```
 
-That is the recruiter path. Three cases show that Baymax allocates attention,
+That is the recruiter path. Four cases show that Baymax discovers hidden evidence, allocates attention,
 changes decisions when another perspective matters, and stops itself before an
 unsafe autonomous action.
 
@@ -72,7 +79,7 @@ make test
 make audit
 ```
 
-The final receipt is `outputs/baymax_audit.json`. It contains three trajectories:
+The final receipt is `outputs/baymax_audit.json`. It contains the discovery receipt and action trajectories:
 
 - attention skip: NOSE stops a routine case before expensive evidence work
 - cross-domain brake: another perspective changes action into human review
@@ -153,3 +160,4 @@ baymax/
 ├── SPEC.md                     📖 scope and proof boundary
 └── README.md                   📖 recruiter audit map
 ```
+- retrieval discovery: symptom-language expansion retrieves an unmentioned CHF precedent

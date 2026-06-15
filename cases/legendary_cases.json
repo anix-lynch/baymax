@@ -1,4 +1,10 @@
 {
+  "retrieval_discovery": {
+    "title": "Retrieval Discovery",
+    "case": "my mother's legs are swollen",
+    "question": "What did Baymax find that nobody mentioned?",
+    "proof": "Raw words miss the target; evidence-language retrieval surfaces a synthetic CHF precedent."
+  },
   "attention_flip": {
     "title": "Attention Flip",
     "case": "routine medication refill",

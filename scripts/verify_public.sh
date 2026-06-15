@@ -21,7 +21,7 @@ check_200 "$base_url/" "$page"
 check_200 "$base_url/outputs/baymax_audit.json"
 check_200 "$base_url/outputs/deployment_readiness_receipt.json"
 
-grep -q "An ER intern who never tires, forgets, or hides uncertainty" "$page" || {
+grep -q "What did Baymax find that nobody mentioned?" "$page" || {
   echo "public check failed: English showroom marker is missing" >&2
   exit 1
 }

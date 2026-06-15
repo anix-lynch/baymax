@@ -1,4 +1,4 @@
-from baymax.audit import ROOT, nose_route, run_audit_suite, run_case
+from baymax.audit import ROOT, nose_route, retrieval_discovery, run_audit_suite, run_case
 from baymax.served_nose import evaluate_signal_contract
 import importlib.util
 
@@ -38,6 +38,15 @@ def test_served_nose_eval_protects_serious_recall_and_measures_reduction():
     assert metrics["labelled_cases"] == 497
     assert metrics["serious_case_recall"] >= 0.95
     assert metrics["expensive_path_reduction_pct"] > 0
+
+
+def test_retrieval_discovery_finds_unmentioned_heart_failure_precedent():
+    result = retrieval_discovery()
+    assert result["raw_query_missed_target"] is True
+    assert result["top_source_id"] == "L1-000162"
+    assert "chronic heart failure history" in result["retrieved_evidence"]
+    assert result["source_is_synthetic"] is True
+    assert "does not diagnose" in result["safety_boundary"]
 
 
 def test_full_baymax_path_reads_both_eyes_and_verifies_action(tmp_path):
@@ -143,6 +152,7 @@ def test_ui_story_is_bound_to_honest_proof():
     assert "https://github.com/anix-lynch/baymax" in html
     assert "deployment_readiness_receipt.json" in html
     assert 'nose.decided_by === "served_signal"' in script
+    assert "retrieval_discovery" in script
     assert "Warfarin" not in html + script
 
 

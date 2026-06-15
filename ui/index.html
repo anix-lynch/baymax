@@ -18,7 +18,7 @@
         <div class="baymax-mark" aria-hidden="true"><span></span><i></i><span></span></div>
         <div>
           <p class="eyebrow">B A Y M A X</p>
-          <h1>An ER intern who never tires, forgets, or hides uncertainty</h1>
+          <h1>What did Baymax find that nobody mentioned?</h1>
         </div>
       </div>
       <div class="topbar-actions">
@@ -28,11 +28,12 @@
     </header>
 
     <section class="intro">
-      <p class="baymax-quote">“I am not capable because I have many organs. I am capable because I know which one to use, when to use it, and when new evidence should change my mind.”</p>
+      <p class="baymax-quote">Patient said: <strong>“My mother’s legs are swollen.”</strong><br>Baymax searches for the story hiding behind the symptom.</p>
       <div class="case-tabs" role="tablist" aria-label="Baymax demo cases">
-        <button class="case-tab" data-case="attention" role="tab">01 · Focus attention</button>
-        <button class="case-tab active" data-case="decision" role="tab">02 · Change course</button>
-        <button class="case-tab" data-case="brake" role="tab">03 · Stop safely</button>
+        <button class="case-tab active" data-case="discovery" role="tab">01 · Discover hidden risk</button>
+        <button class="case-tab" data-case="attention" role="tab">02 · Focus attention</button>
+        <button class="case-tab" data-case="decision" role="tab">03 · Change course</button>
+        <button class="case-tab" data-case="brake" role="tab">04 · Stop safely</button>
       </div>
     </section>
 
@@ -41,7 +42,7 @@
         <div class="panel-heading">
           <div>
             <p class="eyebrow">THINKING OUT LOUD</p>
-            <h2>I am reviewing this case</h2>
+            <h2 id="thinking-title">What Baymax discovered before answering</h2>
           </div>
           <button id="replay" class="replay-button" type="button" aria-label="Replay current case">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
@@ -49,6 +50,7 @@
           </button>
         </div>
         <div id="patient-card" class="patient-card"></div>
+        <div id="discovery-card" class="discovery-card" hidden></div>
         <ol id="transcript" class="transcript"></ol>
         <div id="money-shot" class="money-shot" hidden></div>
       </article>

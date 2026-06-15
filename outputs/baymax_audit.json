@@ -2,6 +2,38 @@
   "audit_version": "baymax.v2",
   "one_line_truth": "Baymax allocates attention, changes action policy when another domain adds risk, and verifies bounded actions when brakes allow them.",
   "trajectories": {
+    "retrieval_discovery": {
+      "patient_words": "my mother's legs are swollen",
+      "surface_symptom": "leg swelling",
+      "retrieval_method": "BM25 over enriched synthetic encounter narratives",
+      "raw_query_top_source_id": "L1-000281",
+      "raw_query_missed_target": true,
+      "evidence_query": "leg swelling edema fluid retention fatigue",
+      "top_source_id": "L1-000162",
+      "top_relevance_score": 15.9204,
+      "source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+      "source_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv",
+      "source_is_synthetic": true,
+      "retrieved_evidence": [
+        "chronic heart failure history",
+        "progressively worsening bilateral lower-extremity edema",
+        "fatigue",
+        "mild dyspnea on exertion"
+      ],
+      "evidence_path": [
+        "leg swelling",
+        "heart-failure precedent",
+        "possible fluid-overload pattern"
+      ],
+      "next_question": "Is she short of breath at rest or when lying flat?",
+      "safety_boundary": "This retrieves a synthetic precedent and suggests a question; it does not diagnose the patient.",
+      "source_receipt": {
+        "condition": "Obesity",
+        "chief_complaint": "Worsening leg swelling and fatigue",
+        "hpi": "81-year-old female with a history of chronic heart failure and obesity presents with a 2-week history of progressively worsening bilateral lower extremity edema, associated with increased fatigue and mild dyspnea on exertion. She denies chest pain, fever, or syncope. She reports good medication adherence, including her penicillin for a recent skin infection.",
+        "assessment_plan": "Patient presents with symptoms consistent with a stable but worsening CHF exacerbation. Differential includes fluid overload, medication non-adherence, or a precipitating factor. Plan to admit for diuresis and further workup, including labs (BMP, BNP) and chest X-ray."
+      }
+    },
     "attention_skip": {
       "audit_version": "baymax.v1",
       "query": "routine medication refill",
@@ -985,6 +1017,10 @@
     ]
   },
   "recruiter_stop_moments": [
+    {
+      "moment": "Baymax translates ordinary symptom language into evidence language and retrieves an unmentioned heart-failure precedent",
+      "proof": "trajectories.retrieval_discovery"
+    },
     {
       "moment": "Baymax refuses to open expensive eyes for a routine case",
       "proof": "trajectories.attention_skip"

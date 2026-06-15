@@ -22,10 +22,24 @@ def main() -> None:
         (ROOT / "cases" / "legendary_cases.json").read_text(encoding="utf-8")
     )
 
+    discovery = cases["retrieval_discovery"]
+    assert discovery["patient_words"] == screenplay["retrieval_discovery"]["case"]
+    _scene(
+        f"CASE 1 · {screenplay['retrieval_discovery']['title'].upper()}",
+        [
+            f"Patient said   : {discovery['patient_words']}",
+            f"Raw retrieval : missed target; returned {discovery['raw_query_top_source_id']}",
+            f"Baymax query  : {discovery['evidence_query']}",
+            f"Found         : {discovery['top_source_id']} · {', '.join(discovery['retrieved_evidence'])}",
+            f"Next question : {discovery['next_question']}",
+            f"Boundary      : {discovery['safety_boundary']}",
+        ],
+    )
+
     attention = cases["attention_skip"]
     assert attention["query"] == screenplay["attention_flip"]["case"]
     _scene(
-        f"CASE 1 · {screenplay['attention_flip']['title'].upper()}",
+        f"CASE 2 · {screenplay['attention_flip']['title'].upper()}",
         [
             f"Incoming case : {attention['query']}",
             f"NOSE          : {attention['nose']['reason']}",
@@ -37,7 +51,7 @@ def main() -> None:
     gridlock = cases["capacity_gridlock"]
     assert calm["query"] == screenplay["decision_flip"]["case"]
     _scene(
-        f"CASE 2 · {screenplay['decision_flip']['title'].upper()}",
+        f"CASE 3 · {screenplay['decision_flip']['title'].upper()}",
         [
             f"Same patient  : {calm['query']}",
             f"Bed available : {calm['brain_hands']['disposition']}",
@@ -51,7 +65,7 @@ def main() -> None:
     assert brake["query"] == screenplay["brake_save"]["case"]
     signal = brake["right_eye"]["drug_safety_signal"]
     _scene(
-        f"CASE 3 · {screenplay['brake_save']['title'].upper()}",
+        f"CASE 4 · {screenplay['brake_save']['title'].upper()}",
         [
             f"Same patient  : {brake['query']}",
             f"Patient-only  : {patient_only['brain_hands']['disposition']}",
@@ -68,7 +82,7 @@ def main() -> None:
 
     print(f"\n{LINE}")
     print("BAYMAX MOVIE COMPLETE")
-    print("attention allocated · decisions changed · unsafe action stopped")
+    print("hidden evidence found · attention allocated · decisions changed · unsafe action stopped")
     print(LINE)
 
 

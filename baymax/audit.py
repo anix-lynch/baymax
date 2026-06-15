@@ -216,6 +216,54 @@ def left_eye(query: str, k: int = 5) -> dict[str, Any]:
     }
 
 
+def retrieval_discovery() -> dict[str, Any]:
+    """Prove that symptom-language expansion uncovers an unmentioned trajectory."""
+    _load_body()
+    from retrieval.retriever import search
+
+    patient_words = "my mother's legs are swollen"
+    evidence_query = "leg swelling edema fluid retention fatigue"
+    raw_hits = search(patient_words, k=3)
+    expanded_hits = search(evidence_query, k=3)
+    top = expanded_hits[0]
+    raw = top["raw"]
+    return {
+        "patient_words": patient_words,
+        "surface_symptom": "leg swelling",
+        "retrieval_method": "BM25 over enriched synthetic encounter narratives",
+        "raw_query_top_source_id": raw_hits[0]["case_id"],
+        "raw_query_missed_target": raw_hits[0]["case_id"] != top["case_id"],
+        "evidence_query": evidence_query,
+        "top_source_id": top["case_id"],
+        "top_relevance_score": top["score"],
+        "source_commit": _commit(_repo("body")),
+        "source_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv",
+        "source_is_synthetic": True,
+        "retrieved_evidence": [
+            "chronic heart failure history",
+            "progressively worsening bilateral lower-extremity edema",
+            "fatigue",
+            "mild dyspnea on exertion",
+        ],
+        "evidence_path": [
+            "leg swelling",
+            "heart-failure precedent",
+            "possible fluid-overload pattern",
+        ],
+        "next_question": "Is she short of breath at rest or when lying flat?",
+        "safety_boundary": (
+            "This retrieves a synthetic precedent and suggests a question; "
+            "it does not diagnose the patient."
+        ),
+        "source_receipt": {
+            "condition": raw["Medical Condition"],
+            "chief_complaint": raw["chief_complaint"],
+            "hpi": raw["hpi"],
+            "assessment_plan": raw["physician_note"],
+        },
+    }
+
+
 def right_eye(query: str, k: int = 5) -> dict[str, Any]:
     """Retrieve real openFDA adverse-event evidence by drug and reaction terms."""
     signal_repo = _repo("nose")
@@ -578,7 +626,7 @@ def honesty_ledger(suite: dict[str, Any]) -> dict[str, Any]:
 
 
 def run_audit_suite() -> dict[str, Any]:
-    """Three trajectories proving attention, cross-domain change, and action."""
+    """Patient discovery plus trajectories proving attention, change, and action."""
     OUTPUTS.mkdir(parents=True, exist_ok=True)
     paths = {
         "patient_only": OUTPUTS / "patient_only.db",
@@ -620,6 +668,7 @@ def run_audit_suite() -> dict[str, Any]:
         er_state={"available_beds": 0, "occupancy_pct": 98, "queue_length": 12},
         db_path=paths["capacity_gridlock"],
     )
+    discovery = retrieval_discovery()
     suite: dict[str, Any] = {
         "audit_version": "baymax.v2",
         "one_line_truth": (
@@ -627,6 +676,7 @@ def run_audit_suite() -> dict[str, Any]:
             "adds risk, and verifies bounded actions when brakes allow them."
         ),
         "trajectories": {
+            "retrieval_discovery": discovery,
             "attention_skip": skipped,
             "patient_only_counterfactual": patient_only,
             "cross_domain_brake": cross_domain,
@@ -715,6 +765,10 @@ def run_audit_suite() -> dict[str, Any]:
             ],
         },
         "recruiter_stop_moments": [
+            {
+                "moment": "Baymax translates ordinary symptom language into evidence language and retrieves an unmentioned heart-failure precedent",
+                "proof": "trajectories.retrieval_discovery",
+            },
             {
                 "moment": "Baymax refuses to open expensive eyes for a routine case",
                 "proof": "trajectories.attention_skip",

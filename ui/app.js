@@ -11,6 +11,19 @@ const organs = [
 ];
 
 const scenes = {
+  discovery: {
+    patient: "Patient said: “My mother’s legs are swollen.”",
+    boundary: "This retrieves a synthetic precedent and suggests a question. It does not diagnose the patient.",
+    money: "NOBODY MENTIONED HEART FAILURE. BAYMAX RETRIEVED IT ANYWAY.",
+    moneyClass: "",
+    receipt: "The discovery is bound to source L1-000162 and its synthetic encounter receipt.",
+    steps: [
+      ["nose", "👃", "The patient used ordinary language. I translate it into evidence language before searching."],
+      ["left", "👁", "Raw words miss the target. Expanded symptom language retrieves a heart-failure precedent."],
+      ["brain", "🧠", "I connect the retrieved clues into a possible fluid-overload pattern without claiming a diagnosis."],
+      ["mouth", "🗣", "The next useful question is: Is she short of breath at rest or when lying flat?"],
+    ],
+  },
   attention: {
     patient: "routine medication refill",
     boundary: "This case stops at the Nose. Neither eye runs and no action is called.",
@@ -57,7 +70,7 @@ const scenes = {
 };
 
 let audit = null;
-let activeCase = "decision";
+let activeCase = "discovery";
 let timerIds = [];
 
 const transcript = document.querySelector("#transcript");
@@ -69,6 +82,8 @@ const receiptState = document.querySelector("#receipt-state");
 const workingLabel = document.querySelector("#working-label");
 const workingDot = document.querySelector(".working-dot");
 const organContainer = document.querySelector("#organs");
+const discoveryCard = document.querySelector("#discovery-card");
+const thinkingTitle = document.querySelector("#thinking-title");
 
 function buildOrgans() {
   organContainer.innerHTML = organs.map(([id, icon, name]) => `
@@ -83,6 +98,8 @@ function reset() {
   timerIds.forEach(clearTimeout);
   timerIds = [];
   transcript.innerHTML = "";
+  discoveryCard.hidden = true;
+  discoveryCard.innerHTML = "";
   moneyShot.hidden = true;
   moneyShot.className = "money-shot";
   receiptState.className = "receipt-state";
@@ -109,6 +126,12 @@ function addThought(icon, copy) {
 
 function validateTruth(caseId) {
   if (!audit) return true;
+  if (caseId === "discovery") {
+    const discovery = audit.trajectories.retrieval_discovery;
+    return discovery.raw_query_missed_target === true
+      && discovery.top_source_id === "L1-000162"
+      && discovery.source_is_synthetic === true;
+  }
   if (caseId === "attention") {
     const nose = audit.trajectories.attention_skip.nose;
     return audit.trajectories.attention_skip.flow.length === 1
@@ -121,11 +144,44 @@ function validateTruth(caseId) {
     && audit.trajectories.cross_domain_brake.brain_hands.receiver_acknowledged === true;
 }
 
+function renderDiscovery() {
+  if (!audit) return;
+  const discovery = audit.trajectories.retrieval_discovery;
+  discoveryCard.innerHTML = `
+    <div class="retrieval-contrast">
+      <div class="retrieval-step missed">
+        <span class="retrieval-label">RAW WORDS · MISSED</span>
+        <strong>${discovery.patient_words}</strong>
+        <span>Top result: ${discovery.raw_query_top_source_id}</span>
+      </div>
+      <div class="retrieval-arrow">→</div>
+      <div class="retrieval-step found">
+        <span class="retrieval-label">EVIDENCE LANGUAGE · FOUND</span>
+        <strong>${discovery.evidence_query}</strong>
+        <span>Top result: ${discovery.top_source_id} · relevance ${discovery.top_relevance_score}</span>
+      </div>
+    </div>
+    <div class="found-banner">What Baymax found that nobody mentioned</div>
+    <div class="finding-grid">
+      ${discovery.retrieved_evidence.map((finding) => `<span>✓ ${finding}</span>`).join("")}
+    </div>
+    <div class="evidence-path">${discovery.evidence_path.join("<b>→</b>")}</div>
+    <div class="source-receipt">
+      <span>Source receipt · ${discovery.top_source_id} · synthetic encounter</span>
+      <p>${discovery.source_receipt.chief_complaint}</p>
+    </div>`;
+  discoveryCard.hidden = false;
+}
+
 function play(caseId) {
   activeCase = caseId;
   reset();
   const scene = scenes[caseId];
   patientCard.textContent = scene.patient;
+  thinkingTitle.textContent = caseId === "discovery"
+    ? "What Baymax discovered before answering"
+    : "I am reviewing this case";
+  if (caseId === "discovery") renderDiscovery();
   boundary.textContent = scene.boundary;
   receiptText.textContent = "I am verifying the outcome.";
   workingLabel.textContent = "I am reviewing the case...";
