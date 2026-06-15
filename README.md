@@ -37,7 +37,7 @@ stopped, and only claims verification when the receipt proves it.
 ```text
 CASE 1 · ATTENTION FLIP
 routine medication refill
-→ NOSE finds no cheap safety trigger
+→ served NOSE assigns ESI-attention tier 4
 → expensive eyes stay closed
 → no action attempted
 
@@ -85,7 +85,7 @@ ships at the strength of its **weakest load-bearing organ** — never above it.
 
 | Organ | Capability lane | Verdict gate |
 |---|---|---|
-| NOSE | signal-routing | per-case routing is a keyword gate; the evaluated ranker is batch-only |
+| NOSE | signal-routing | served patient signal; ≥95% serious recall gate |
 | Left eye | data-truth | 55,500 rows scanned this run |
 | Right eye | evidence-retrieval | 5,000 openFDA reports scanned; population signal, not causality |
 | Brain / Brakes / Hands | action-engine | decision change, autonomous block, and durable outcome re-read |
@@ -100,7 +100,7 @@ CI by `tests/test_audit.py::test_honesty_ledger_gates_headline_at_weakest_load_b
 
 | Organ | Public source | What this repo audits |
 |---|---|---|
-| NOSE | [healthcare-signal-platform](https://github.com/anix-lynch/healthcare-signal-platform) | Five-signal batch proof; 30% fewer LLM calls at 95.4% serious recall |
+| NOSE | [healthcare-genai-engineer](https://github.com/anix-lynch/healthcare-genai-engineer) + [healthcare-signal-platform](https://github.com/anix-lynch/healthcare-signal-platform) | Served patient attention signal plus a separate five-signal openFDA batch proof |
 | Left eye | [healthcare-ai-data-engineer](https://github.com/anix-lynch/healthcare-ai-data-engineer) | Full 55,500-row synthetic encounter corpus and reconciliation |
 | Right eye | [healthcare-da](https://github.com/anix-lynch/healthcare-da) + [healthcare-signal-platform](https://github.com/anix-lynch/healthcare-signal-platform) | Real openFDA evidence plus governed semantic-layer lineage |
 | Brain + hands | [healthcare-genai-engineer](https://github.com/anix-lynch/healthcare-genai-engineer) | Triage, Bed Ops decision, durable action, ACK, and outcome verification |
@@ -111,10 +111,12 @@ Baymax is a closed-loop ER **simulation**, not a deployed clinical system.
 The action engine changes durable SQLite state representing a Bed Ops
 disposition; it does not write to a hospital EHR or bed-management platform.
 
-The per-case NOSE is deliberately cheap: a safety-term gate decides whether to
-open both eyes. The five statistical/ML/retrieval signals are independently
-batch-evaluated in the signal sibling and linked in the audit receipt; this repo
-does not pretend all five models execute online for every patient query.
+The per-case NOSE is deliberately cheap: a versioned deterministic ESI
+attention signal decides whether to open both eyes. On 497 labelled synthetic
+patient cases it preserves 95.39% serious-case recall while skipping 4.83% of
+expensive paths. The five statistical/ML/retrieval signals are separately
+batch-evaluated on 5,000 real openFDA reports; this repo does not pretend those
+models score patient queries online.
 
 ## Repo Map
 
@@ -122,6 +124,7 @@ does not pretend all five models execute online for every patient query.
 baymax/
 ├── baymax/demo.py              ✅ plays the three memorable cases
 ├── baymax/audit.py             ✅ generates deep evidence receipts
+├── baymax/served_nose.py       ✅ serves and evaluates pre-eye attention
 ├── cases/legendary_cases.json  ✅ the public three-case screenplay
 ├── tests/test_audit.py         ✅ pins every movie outcome in CI
 ├── scripts/sync_sources.sh     ✅ fetches the four public sibling sources

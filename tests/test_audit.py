@@ -1,4 +1,5 @@
-from baymax.audit import ROOT, run_audit_suite, run_case
+from baymax.audit import ROOT, nose_route, run_audit_suite, run_case
+from baymax.served_nose import evaluate_signal_contract
 
 
 def test_nose_stops_low_value_case_before_eyes(tmp_path):
@@ -11,6 +12,22 @@ def test_nose_stops_low_value_case_before_eyes(tmp_path):
     assert result["nose"]["route_to_eyes"] is False
     assert "left_eye" not in result
     assert "brain_hands" not in result
+    assert result["nose"]["decided_by"] == "served_signal"
+    assert result["nose"]["signal_version"].startswith("esi-attention-router.v1@")
+
+
+def test_served_nose_routes_serious_case_before_eyes():
+    receipt = nose_route("62yo male chest pain diaphoresis aspirin")
+    assert receipt["route_to_eyes"] is True
+    assert receipt["decided_by"] == "served_signal"
+    assert receipt["priority_tier"] <= 3
+
+
+def test_served_nose_eval_protects_serious_recall_and_measures_reduction():
+    metrics = evaluate_signal_contract()
+    assert metrics["labelled_cases"] == 497
+    assert metrics["serious_case_recall"] >= 0.95
+    assert metrics["expensive_path_reduction_pct"] > 0
 
 
 def test_full_baymax_path_reads_both_eyes_and_verifies_action(tmp_path):

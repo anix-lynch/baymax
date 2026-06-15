@@ -12,17 +12,38 @@
       "nose": {
         "executed_before_eyes": true,
         "route_to_eyes": false,
-        "reason": "no cheap safety term fired; expensive eyes skipped",
-        "batch_signals_proven": [
+        "signal_version": "esi-attention-router.v1@9a409b531946",
+        "route_reason": "served deterministic ESI attention tier 4 skips expensive eyes",
+        "priority_tier": 4,
+        "priority_score": 0.4,
+        "signal_flags": [],
+        "decided_by": "served_signal",
+        "evaluation": {
+          "labelled_cases": 497,
+          "serious_cases": 304,
+          "routed_cases": 473,
+          "routed_fraction": 0.9517,
+          "expensive_path_reduction_pct": 4.83,
+          "serious_case_recall": 0.9539,
+          "route_rule": "route when deterministic pre-retrieval ESI <= 3",
+          "serious_definition": "labelled ESI <= 2",
+          "evaluation_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv"
+        },
+        "served_source_repo": "healthcare-genai-engineer",
+        "served_source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "served_source_artifact": "sources/healthcare-genai-engineer/workflows/classify_esi.py",
+        "reason": "served deterministic ESI attention tier 4 skips expensive eyes",
+        "batch_domain_signals_proven": [
           "anomaly",
           "cluster",
           "classify",
           "rank",
           "retrieval"
         ],
-        "per_case_method": "cheap safety-term gate",
-        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
-        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "per_case_method": "served deterministic ESI attention signal",
+        "batch_domain_source_repo": "healthcare-signal-platform",
+        "batch_domain_source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "batch_domain_source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
         "batch_n": 5000,
         "batch_llm_call_reduction_pct": 30,
         "batch_serious_recall": 0.954
@@ -46,17 +67,40 @@
       "nose": {
         "executed_before_eyes": true,
         "route_to_eyes": true,
-        "reason": "safety terms fired: ['abdominal pain']",
-        "batch_signals_proven": [
+        "signal_version": "esi-attention-router.v1@9a409b531946",
+        "route_reason": "served deterministic ESI attention tier 3 routes to expensive eyes",
+        "priority_tier": 3,
+        "priority_score": 0.6,
+        "signal_flags": [
+          "moderate_keyword:abdominal pain"
+        ],
+        "decided_by": "served_signal",
+        "evaluation": {
+          "labelled_cases": 497,
+          "serious_cases": 304,
+          "routed_cases": 473,
+          "routed_fraction": 0.9517,
+          "expensive_path_reduction_pct": 4.83,
+          "serious_case_recall": 0.9539,
+          "route_rule": "route when deterministic pre-retrieval ESI <= 3",
+          "serious_definition": "labelled ESI <= 2",
+          "evaluation_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv"
+        },
+        "served_source_repo": "healthcare-genai-engineer",
+        "served_source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "served_source_artifact": "sources/healthcare-genai-engineer/workflows/classify_esi.py",
+        "reason": "served deterministic ESI attention tier 3 routes to expensive eyes",
+        "batch_domain_signals_proven": [
           "anomaly",
           "cluster",
           "classify",
           "rank",
           "retrieval"
         ],
-        "per_case_method": "cheap safety-term gate",
-        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
-        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "per_case_method": "served deterministic ESI attention signal",
+        "batch_domain_source_repo": "healthcare-signal-platform",
+        "batch_domain_source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "batch_domain_source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
         "batch_n": 5000,
         "batch_llm_call_reduction_pct": 30,
         "batch_serious_recall": 0.954
@@ -209,17 +253,40 @@
       "nose": {
         "executed_before_eyes": true,
         "route_to_eyes": true,
-        "reason": "safety terms fired: ['abdominal pain']",
-        "batch_signals_proven": [
+        "signal_version": "esi-attention-router.v1@9a409b531946",
+        "route_reason": "served deterministic ESI attention tier 3 routes to expensive eyes",
+        "priority_tier": 3,
+        "priority_score": 0.6,
+        "signal_flags": [
+          "moderate_keyword:abdominal pain"
+        ],
+        "decided_by": "served_signal",
+        "evaluation": {
+          "labelled_cases": 497,
+          "serious_cases": 304,
+          "routed_cases": 473,
+          "routed_fraction": 0.9517,
+          "expensive_path_reduction_pct": 4.83,
+          "serious_case_recall": 0.9539,
+          "route_rule": "route when deterministic pre-retrieval ESI <= 3",
+          "serious_definition": "labelled ESI <= 2",
+          "evaluation_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv"
+        },
+        "served_source_repo": "healthcare-genai-engineer",
+        "served_source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "served_source_artifact": "sources/healthcare-genai-engineer/workflows/classify_esi.py",
+        "reason": "served deterministic ESI attention tier 3 routes to expensive eyes",
+        "batch_domain_signals_proven": [
           "anomaly",
           "cluster",
           "classify",
           "rank",
           "retrieval"
         ],
-        "per_case_method": "cheap safety-term gate",
-        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
-        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "per_case_method": "served deterministic ESI attention signal",
+        "batch_domain_source_repo": "healthcare-signal-platform",
+        "batch_domain_source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "batch_domain_source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
         "batch_n": 5000,
         "batch_llm_call_reduction_pct": 30,
         "batch_serious_recall": 0.954
@@ -399,17 +466,41 @@
       "nose": {
         "executed_before_eyes": true,
         "route_to_eyes": true,
-        "reason": "safety terms fired: ['chest pain', 'diaphoresis']",
-        "batch_signals_proven": [
+        "signal_version": "esi-attention-router.v1@9a409b531946",
+        "route_reason": "served deterministic ESI attention tier 2 routes to expensive eyes",
+        "priority_tier": 2,
+        "priority_score": 0.8,
+        "signal_flags": [
+          "high_risk_keyword:chest pain",
+          "high_risk_keyword:diaphoresis"
+        ],
+        "decided_by": "served_signal",
+        "evaluation": {
+          "labelled_cases": 497,
+          "serious_cases": 304,
+          "routed_cases": 473,
+          "routed_fraction": 0.9517,
+          "expensive_path_reduction_pct": 4.83,
+          "serious_case_recall": 0.9539,
+          "route_rule": "route when deterministic pre-retrieval ESI <= 3",
+          "serious_definition": "labelled ESI <= 2",
+          "evaluation_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv"
+        },
+        "served_source_repo": "healthcare-genai-engineer",
+        "served_source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "served_source_artifact": "sources/healthcare-genai-engineer/workflows/classify_esi.py",
+        "reason": "served deterministic ESI attention tier 2 routes to expensive eyes",
+        "batch_domain_signals_proven": [
           "anomaly",
           "cluster",
           "classify",
           "rank",
           "retrieval"
         ],
-        "per_case_method": "cheap safety-term gate",
-        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
-        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "per_case_method": "served deterministic ESI attention signal",
+        "batch_domain_source_repo": "healthcare-signal-platform",
+        "batch_domain_source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "batch_domain_source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
         "batch_n": 5000,
         "batch_llm_call_reduction_pct": 30,
         "batch_serious_recall": 0.954
@@ -605,17 +696,41 @@
       "nose": {
         "executed_before_eyes": true,
         "route_to_eyes": true,
-        "reason": "safety terms fired: ['chest pain', 'diaphoresis']",
-        "batch_signals_proven": [
+        "signal_version": "esi-attention-router.v1@9a409b531946",
+        "route_reason": "served deterministic ESI attention tier 2 routes to expensive eyes",
+        "priority_tier": 2,
+        "priority_score": 0.8,
+        "signal_flags": [
+          "high_risk_keyword:chest pain",
+          "high_risk_keyword:diaphoresis"
+        ],
+        "decided_by": "served_signal",
+        "evaluation": {
+          "labelled_cases": 497,
+          "serious_cases": 304,
+          "routed_cases": 473,
+          "routed_fraction": 0.9517,
+          "expensive_path_reduction_pct": 4.83,
+          "serious_case_recall": 0.9539,
+          "route_rule": "route when deterministic pre-retrieval ESI <= 3",
+          "serious_definition": "labelled ESI <= 2",
+          "evaluation_artifact": "sources/healthcare-genai-engineer/data/raw/healthcare_dataset.csv"
+        },
+        "served_source_repo": "healthcare-genai-engineer",
+        "served_source_commit": "9a409b5319468f365f38eab0e0ab79ecae282b00",
+        "served_source_artifact": "sources/healthcare-genai-engineer/workflows/classify_esi.py",
+        "reason": "served deterministic ESI attention tier 2 routes to expensive eyes",
+        "batch_domain_signals_proven": [
           "anomaly",
           "cluster",
           "classify",
           "rank",
           "retrieval"
         ],
-        "per_case_method": "cheap safety-term gate",
-        "source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
-        "source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
+        "per_case_method": "served deterministic ESI attention signal",
+        "batch_domain_source_repo": "healthcare-signal-platform",
+        "batch_domain_source_commit": "3239500f3e14aad67c2f406abbe62f638625e597",
+        "batch_domain_source_artifact": "sources/healthcare-signal-platform/openfda_signals/proof/bullet5_scaled_proof.json",
         "batch_n": 5000,
         "batch_llm_call_reduction_pct": 30,
         "batch_serious_recall": 0.954
@@ -823,9 +938,9 @@
     "target": "maximum controllable achievement for a solo Applied AI Engineer",
     "organs": {
       "nose": {
-        "grade": "B",
-        "current": "cheap per-case gate plus five-signal batch proof",
-        "a_plus": "serve the evaluated ranker online and measure avoided reasoning calls per trajectory"
+        "grade": "A-",
+        "current": "versioned pre-retrieval patient attention signal with labelled serious-recall and expensive-path reduction, plus a separate five-signal openFDA batch proof",
+        "a_plus": "improve patient-case cost reduction without dropping the serious-case recall floor"
       },
       "eyes": {
         "grade": "A-",
@@ -864,9 +979,9 @@
       }
     },
     "smallest_path_to_complete": [
-      "serve the evaluated NOSE ranker on each case instead of only linking its batch proof",
       "add 20-50 independent cross-domain counterfactual scenarios",
-      "run Nerves across separate local services with timeout and dead-letter recovery"
+      "run Nerves across separate local services with timeout and dead-letter recovery",
+      "improve patient-case attention reduction without dropping serious-case recall below 95%"
     ]
   },
   "recruiter_stop_moments": [
@@ -894,18 +1009,18 @@
   "honesty_ledger": {
     "law": "Baymax ships at the strength of its weakest load-bearing organ. Each organ proves one capability lane and may only claim the sentence its live proof earns; \u274c leaves are never claimed.",
     "headline_verdict": "\ud83d\udfe1",
-    "weakest_load_bearing_organ": "nose",
-    "headline_claim_allowed": "Baymax proves the closed evidence-to-action loop end-to-end, but ships at \ud83d\udfe1 \u2014 gated by NOSE (signal-routing): per-case routing is a keyword safety gate; the evaluated ranker is batch-only, not served online.",
+    "weakest_load_bearing_organ": "nerves",
+    "headline_claim_allowed": "Baymax proves the closed evidence-to-action loop end-to-end, but ships at \ud83d\udfe1 \u2014 gated by NERVES (clinical-handoff): timeout, retry, and dead-letter recovery across separate services is not yet proven.",
     "organs": {
       "nose": {
-        "verdict": "\ud83d\udfe1",
+        "verdict": "\u2705",
         "capability_lane": "signal-routing",
-        "source_repo": "healthcare-signal-platform",
-        "maturity_grade": "B",
+        "source_repo": "healthcare-genai-engineer",
+        "maturity_grade": "A-",
         "live_gate_passed": true,
         "load_bearing": true,
-        "claim_allowed": "routes cheap cases before expensive evidence using a committed five-signal batch proof",
-        "hedge": "per-case routing is a keyword safety gate; the evaluated ranker is batch-only, not served online"
+        "claim_allowed": "routes each patient case through a versioned, evaluated pre-retrieval attention signal before opening expensive eyes",
+        "hedge": "the served patient router is deterministic and evaluated on synthetic labelled cases; the 30% openFDA router win is a separate batch-domain proof"
       },
       "left_eye": {
         "verdict": "\u2705",

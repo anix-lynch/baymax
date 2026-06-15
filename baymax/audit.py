@@ -40,10 +40,10 @@ _GRADE_TIER = {"A": GREEN, "A-": GREEN, "B+": YELLOW, "B": YELLOW, "C": RED}
 ORGAN_LANE = {
     "nose": {
         "lane": "signal-routing",
-        "source_repo": "healthcare-signal-platform",
+        "source_repo": "healthcare-genai-engineer",
         "load_bearing": True,
-        "claim_allowed": "routes cheap cases before expensive evidence using a committed five-signal batch proof",
-        "hedge": "per-case routing is a keyword safety gate; the evaluated ranker is batch-only, not served online",
+        "claim_allowed": "routes each patient case through a versioned, evaluated pre-retrieval attention signal before opening expensive eyes",
+        "hedge": "the served patient router is deterministic and evaluated on synthetic labelled cases; the 30% openFDA router win is a separate batch-domain proof",
     },
     "left_eye": {
         "lane": "data-truth",
@@ -127,7 +127,7 @@ def _line_count(path: Path) -> int:
 
 
 def nose_route(query: str) -> dict[str, Any]:
-    """Cheap, pre-retrieval safety router with a committed signal receipt."""
+    """Cheap, pre-retrieval router with served and batch-domain signal receipts."""
     proof_path = (
         _repo("nose")
         / "openfda_signals"
@@ -135,22 +135,37 @@ def nose_route(query: str) -> dict[str, Any]:
         / "bullet5_scaled_proof.json"
     )
     proof = _json(proof_path)
-    text = query.lower()
-    high_hits = [term for term in HIGH_RISK_TERMS if term in text]
-    moderate_hits = [term for term in MODERATE_TERMS if term in text]
-    routed = bool(high_hits or moderate_hits)
+    try:
+        from baymax.served_nose import route_signal
+
+        served = route_signal(query)
+    except Exception as exc:
+        # Fail safe if the served contract cannot load: rules may open the eyes,
+        # but never claim the evaluated signal made the decision.
+        text = query.lower()
+        hits = [
+            term for term in HIGH_RISK_TERMS + MODERATE_TERMS if term in text
+        ]
+        served = {
+            "route_to_eyes": bool(hits),
+            "signal_version": None,
+            "route_reason": f"served signal unavailable; safety floor fired: {hits}",
+            "priority_tier": None,
+            "priority_score": None,
+            "signal_flags": hits,
+            "decided_by": "safety_floor",
+            "evaluation": None,
+            "error": type(exc).__name__,
+        }
     return {
         "executed_before_eyes": True,
-        "route_to_eyes": routed,
-        "reason": (
-            f"safety terms fired: {high_hits + moderate_hits}"
-            if routed
-            else "no cheap safety term fired; expensive eyes skipped"
-        ),
-        "batch_signals_proven": ["anomaly", "cluster", "classify", "rank", "retrieval"],
-        "per_case_method": "cheap safety-term gate",
-        "source_commit": _commit(_repo("nose")),
-        "source_artifact": str(proof_path.relative_to(ROOT)),
+        **served,
+        "reason": served["route_reason"],
+        "batch_domain_signals_proven": ["anomaly", "cluster", "classify", "rank", "retrieval"],
+        "per_case_method": "served deterministic ESI attention signal",
+        "batch_domain_source_repo": "healthcare-signal-platform",
+        "batch_domain_source_commit": _commit(_repo("nose")),
+        "batch_domain_source_artifact": str(proof_path.relative_to(ROOT)),
         "batch_n": proof["n_reports"],
         "batch_llm_call_reduction_pct": proof["router_ablation"][
             "llm_calls_reduced_pct_at_95_recall"
@@ -498,7 +513,13 @@ def _organ_live_gate(suite: dict[str, Any], organ: str) -> bool:
     cross = traj["cross_domain_brake"]["brain_hands"]
     bed = traj["capacity_bed_available"]["brain_hands"]
     gates = {
-        "nose": traj["attention_skip"]["flow"] == ["nose"],
+        "nose": (
+            traj["attention_skip"]["flow"] == ["nose"]
+            and traj["attention_skip"]["nose"]["decided_by"] == "served_signal"
+            and bool(traj["attention_skip"]["nose"]["signal_version"])
+            and traj["attention_skip"]["nose"]["evaluation"]["serious_case_recall"]
+            >= 0.95
+        ),
         "left_eye": traj["capacity_bed_available"]["left_eye"]["rows_scanned"] == 55500,
         "right_eye": traj["capacity_bed_available"]["right_eye"]["reports_scanned"] == 5000,
         "brain": suite["decision_flip_proof"]["action_changed"]
@@ -647,9 +668,9 @@ def run_audit_suite() -> dict[str, Any]:
             "target": "maximum controllable achievement for a solo Applied AI Engineer",
             "organs": {
                 "nose": {
-                    "grade": "B",
-                    "current": "cheap per-case gate plus five-signal batch proof",
-                    "a_plus": "serve the evaluated ranker online and measure avoided reasoning calls per trajectory",
+                    "grade": "A-",
+                    "current": "versioned pre-retrieval patient attention signal with labelled serious-recall and expensive-path reduction, plus a separate five-signal openFDA batch proof",
+                    "a_plus": "improve patient-case cost reduction without dropping the serious-case recall floor",
                 },
                 "eyes": {
                     "grade": "A-",
@@ -688,9 +709,9 @@ def run_audit_suite() -> dict[str, Any]:
                 },
             },
             "smallest_path_to_complete": [
-                "serve the evaluated NOSE ranker on each case instead of only linking its batch proof",
                 "add 20-50 independent cross-domain counterfactual scenarios",
                 "run Nerves across separate local services with timeout and dead-letter recovery",
+                "improve patient-case attention reduction without dropping serious-case recall below 95%",
             ],
         },
         "recruiter_stop_moments": [

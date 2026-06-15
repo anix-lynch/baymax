@@ -52,7 +52,7 @@ copy the museum into the movie.
 
 ## Current Score
 
-Current controllable L2 maturity: **80/100** after Phase 4.
+Current controllable L2 maturity: **83/100** after Phase 5.
 
 The audited baseline was **66/100**. Phase 1 added four points by making the
 recommendation path fail before generation and planning. Phase 2A added three
@@ -65,6 +65,8 @@ Phase 3B added one point by enforcing ACK deadlines and durable stale-owner
 escalation.
 Phase 4 added three points by turning Care Follow-up from a plan into a
 durable lifecycle with guarded closure and human escalation.
+Phase 5 added three points by replacing the showroom's unversioned keyword
+gate with a served, evaluated patient attention contract.
 
 Showroom hardening (no maturity points claimed): the audit now emits an
 `honesty_ledger` that gates the headline verdict at the weakest load-bearing
@@ -81,7 +83,7 @@ verified showroom commit `44ca919`.
 | Immune | 13/15 | Trusted conflict and evidence sufficiency stop actions; calibration remains |
 | Nerves | 10/10 | Independent ACK, deadline, timeout, escalation, and visible wait state |
 | Heart + Ethics | 8/10 | Follow-up closure is durable; consent and authority remain design gaps |
-| A/B/C live wiring | 6/15 | Eyes are real; online Nose remains a cheap rule gate |
+| A/B/C + signal wiring | 9/15 | Eyes are live; patient Nose is served from L2; C remains a separate batch-domain proof |
 | Runtime/deployment | 6/10 | Live service/showroom exists; operational runtime is not fully unified |
 
 Target: **80+ without hospital access, sales work, fake adoption, or feature
@@ -236,8 +238,7 @@ Earned maturity gain: **+3**.
 
 ### Phase 5 - Online Nose Wiring
 
-Status: **ACTIVE — next phase.** The honesty ledger pins NOSE as the weakest
-load-bearing organ capping the headline at 🟡; this phase lifts that headline.
+Status: **COMPLETE.**
 
 Goal: replace the per-case keyword gate with a served, evaluated signal
 contract without opening an ML-career side quest.
@@ -255,7 +256,15 @@ Acceptance:
 - Attention Flip receipt identifies the signal version.
 - Serious-case recall floor remains protected.
 
-Expected maturity gain: **+3**.
+Measured proof:
+
+- 497 labelled synthetic patient cases.
+- 95.39% serious-case recall.
+- 4.83% expensive-path reduction.
+- Separate openFDA batch proof remains 30% call reduction at 95.4% recall on
+  5,000 real FAERS reports; that metric is not claimed for patient routing.
+
+Earned maturity gain: **+3**.
 
 ## Thin Deployment Readiness
 
