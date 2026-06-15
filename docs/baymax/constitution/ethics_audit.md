@@ -171,3 +171,9 @@ Required enforcement:
 
 Recorded current ethical controls, canonical non-negotiables, behavioral
 protocols, contradictions, and the minimum Conduct Envelope architecture.
+
+### June 2026 - Safety-before-recommendation upgrade
+
+Made safety override obedience structurally enforceable on `/v1/ask`.
+Non-`ACT` verdicts no longer produce generated recommendations or
+executed-looking collaboration plans.

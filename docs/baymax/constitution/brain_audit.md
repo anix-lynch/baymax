@@ -106,3 +106,11 @@ of them.
 
 Recorded task-specific procedural strengths, Decision Safety Envelope behavior,
 and the absence of a generalized Brain Library.
+
+### June 2026 - Safety-before-recommendation upgrade
+
+Closed the recommendation-ordering contradiction. The `/v1/ask` safety verdict
+now runs before grounded generation and collaboration planning. A non-`ACT`
+verdict returns a deterministic withheld response, no operational
+recommendations, and no executed-looking collaboration plan. Regression tests
+prove the generator and planner are not called.

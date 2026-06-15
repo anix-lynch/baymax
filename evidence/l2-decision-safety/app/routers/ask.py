@@ -157,6 +157,14 @@ def _triage_level_from_esi(esi: int | None) -> TriageLevel | None:
     return "WAIT"
 
 
+def _withheld_answer(reason_code: str, blocking_reason: str | None) -> str:
+    """Return a deterministic refusal without calling the generator."""
+    return (
+        f"Baymax withheld a direct recommendation ({reason_code}). "
+        f"{blocking_reason or 'Additional verified evidence is required before proceeding.'}"
+    )
+
+
 @_stage_op
 def prediction_signal_node(
     query: str,
@@ -308,13 +316,84 @@ def _build_response(req: AskRequest, pipeline: QueryPipeline) -> AskResponse:
         triage_level=triage_level,
     )
 
-    # 7) Generate
+    # 7) Fuse evidence and run the safety gate BEFORE generation or planning.
+    # A non-ACT verdict must not spend generation cost or create an
+    # executed-looking collaboration plan.
+    esi_final, esi_conf, disagreement = fuse_esi(
+        rule_tier, red_flags, rag_tier, rag_conf
+    )
+    triage_level = _triage_level_from_esi(esi_final)
+    safety_verdict = evaluate_safety(SafetyContext(
+        ingested_at=(
+            req.er_state.observed_at
+            if req.er_state is not None
+            else datetime.now(timezone.utc).isoformat()
+        ),
+        required_evidence_complete=bool(hits),
+        confidence_before=rag_conf,
+        confidence_after=esi_conf,
+        evidence_conflicts=["esi_rule_vs_rag"] if disagreement else [],
+        action_risk="high" if triage_level == "NOW" else "medium",
+        reversible=triage_level != "NOW",
+        current_stage="pre_recommendation_safety_review",
+    ))
+    if safety_verdict.decision != "ACT":
+        warnings.append(
+            f"safety_envelope:{safety_verdict.reason_code}: "
+            f"{safety_verdict.blocking_reason}"
+        )
+        decision_basis = [
+            f"Acute triage level: {triage_level}",
+            f"Safety decision: {safety_verdict.decision}",
+            f"Safety reason: {safety_verdict.reason_code}",
+        ]
+        enriched_citations = enrich_citations([], hits)
+        grouped = build_grouped_evidence(hits)
+        return AskResponse(
+            query=req.query,
+            answer=_withheld_answer(
+                safety_verdict.reason_code, safety_verdict.blocking_reason
+            ),
+            citations=enriched_citations,
+            method_used=method_used,
+            retrieved_count=len(hits),
+            latency_ms=int((time.time() - t0) * 1000),
+            warnings=warnings,
+            esi_rule_based=rule_tier,
+            esi_rag_knn=rag_tier,
+            esi_final=esi_final,
+            esi_confidence=esi_conf,
+            esi_disagreement=disagreement,
+            esi_red_flags=red_flags,
+            esi_votes=rag_votes,
+            triage_level=triage_level,
+            prediction_signal=prediction_signal,
+            decision_basis=decision_basis,
+            operational_recommendations=[],
+            explanation_for_human=(
+                "Baymax stopped before recommendation generation and action "
+                f"planning because {safety_verdict.blocking_reason}"
+            ),
+            agent_collaboration=None,
+            guard_ms=guard_ms,
+            retrieve_ms=retrieve_ms,
+            generate_ms=0,
+            guard_triggered=guard_triggered,
+            guard_type=guard_type_200,
+            trace_call_id=trace_id,
+            grouped_evidence=grouped,
+            signal_routing=signal_routing,
+            safety_decision=safety_verdict.decision,
+            safety_reason_code=safety_verdict.reason_code,
+        )
+
+    # 8) Generate only after the safety gate permits a recommendation.
     t_generate = time.perf_counter()
     gen = generate_grounded_answer(clean_query, hits)
     generate_ms = int((time.perf_counter() - t_generate) * 1000)
     warnings.extend(gen.get("warnings", []))
 
-    # 8) Output guardrails + fuse
+    # 9) Output guardrails + confirm the fused classification.
     final_warnings, citations, esi_final, esi_conf, disagreement, hard_failures, rag_votes = output_guard_and_fuse(
         answer=gen["answer"],
         hits=hits,
@@ -331,36 +410,11 @@ def _build_response(req: AskRequest, pipeline: QueryPipeline) -> AskResponse:
             detail["trace_call_id"] = trace_id
         raise HTTPException(status_code=422, detail=detail)
 
-    triage_level = _triage_level_from_esi(esi_final)
-    safety_verdict = evaluate_safety(SafetyContext(
-        ingested_at=(
-            req.er_state.observed_at
-            if req.er_state is not None
-            else datetime.now(timezone.utc).isoformat()
-        ),
-        required_evidence_complete=bool(hits),
-        confidence_before=rag_conf,
-        confidence_after=esi_conf,
-        evidence_conflicts=["esi_rule_vs_rag"] if disagreement else [],
-        action_risk="high" if triage_level == "NOW" else "medium",
-        reversible=triage_level != "NOW",
-        current_stage="pre_recommendation_safety_review",
-    ))
     decision_basis, override_applied, override_reason, operational_recommendations, explanation_for_human = orchestration_override_rules(
         triage_level=triage_level,
         prediction_signal=prediction_signal,
         red_flags=red_flags,
     )
-    if safety_verdict.decision != "ACT":
-        operational_recommendations = []
-        warnings.append(
-            f"safety_envelope:{safety_verdict.reason_code}: "
-            f"{safety_verdict.blocking_reason}"
-        )
-        explanation_for_human = (
-            f"Baymax withheld direct operational recommendations: "
-            f"{safety_verdict.blocking_reason} {explanation_for_human}"
-        )
     agent_collaboration = plan_agent_collaboration(
         triage_level=triage_level,
         prediction_signal=prediction_signal,

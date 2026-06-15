@@ -106,3 +106,9 @@ Recorded strong post-action skepticism and weak pre-action self-doubt.
 
 Closed the stale/default-1970 capacity gap and added durable reason-coded
 suppression, clarification, human review, and ACK waiting.
+
+### June 2026 - Safety-before-recommendation upgrade
+
+Moved the safety decision ahead of recommendation generation and action
+planning. Stale or low-confidence evidence now stops the expensive generator
+and planner rather than generating first and suppressing afterward.

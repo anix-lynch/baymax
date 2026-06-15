@@ -4,6 +4,10 @@ This is the root inventory for the Baymax architecture, safety, and positioning 
 
 Open this file first when auditing Baymax in Cursor or on the Intel twin.
 
+For active implementation work, start from `SPEC.md`. It is the single
+Northstar control plane and names the current phase, wiring, acceptance tests,
+and stop-doing rules.
+
 ## Source Ownership
 
 - `/Users/anixlynch/dev/healthcare-genai-engineer` is the canonical L2 runtime repository.
