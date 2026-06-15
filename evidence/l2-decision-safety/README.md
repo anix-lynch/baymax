@@ -14,6 +14,9 @@ The evidence copy is not a second runtime source of truth. Changes must be made 
 
 - Procedural reasoning and evidence arbitration
 - Decision Safety Envelope
+- Versioned action-risk and reversibility policy
+- Durable ACK-derived safety facts with provenance receipts
+- Public API regression proof preventing caller safety self-certification
 - Durable action, ACK, retry, and outcome verification
 - Bed and capacity routing
 - Recommendation and guardrail behavior

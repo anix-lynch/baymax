@@ -177,3 +177,11 @@ protocols, contradictions, and the minimum Conduct Envelope architecture.
 Made safety override obedience structurally enforceable on `/v1/ask`.
 Non-`ACT` verdicts no longer produce generated recommendations or
 executed-looking collaboration plans.
+
+### June 2026 - Trusted safety derivation Phase 2A
+
+Removed caller authority to declare an action safe through public request
+fields. Risk and reversibility now come from versioned policy, ACK comes from
+durable task state, and the receipt records the authority source used for the
+decision. Trusted conflict and calibrated confidence remain required before
+those facts can govern action.

@@ -7,7 +7,7 @@ tools, or its apparent success.
 
 ## Current Grade
 
-**B- overall**
+**B overall**
 
 - Post-action verification: **A**
 - Grounding and hallucination controls: **B**
@@ -15,8 +15,8 @@ tools, or its apparent success.
 - Freshness defense: **A- after Decision Safety Envelope**
 
 Baymax is strongest after action: it verifies reality instead of trusting the
-tool. Before action, it now has meaningful self-doubt, but several safety facts
-remain caller-controlled.
+tool. Before action, it now rejects caller safety self-certification and
+records where each safety fact came from.
 
 ## Existing Capabilities
 
@@ -52,8 +52,8 @@ without changing reality.
 
 - General cross-domain conflict detection.
 - Confidence calibration against observed correctness.
-- Independent verification of caller-supplied risk, reversibility, conflict,
-  confidence, and ACK.
+- Trusted cross-domain conflict derivation.
+- Calibrated confidence derived from observed model/evidence performance.
 - Claim-level citation enforcement for every generated statement.
 - Self-critique or alternative-reasoning check before recommendation.
 - Runtime memory of prior failure patterns.
@@ -61,10 +61,12 @@ without changing reality.
 
 ## Contradictions
 
-### Truth verification is uneven
+### Self-doubt is honest but incomplete
 
-Baymax distrusts tool success after action, but trusts several safety inputs
-before action when supplied by the API caller.
+Baymax records trusted risk, reversibility, and ACK facts, and explicitly marks
+conflict and confidence unavailable instead of accepting caller assertions.
+It still cannot act on conflict or calibrated confidence until those trusted
+sources are wired.
 
 ### Unsupported claims can still pass
 
@@ -112,3 +114,10 @@ suppression, clarification, human review, and ACK waiting.
 Moved the safety decision ahead of recommendation generation and action
 planning. Stale or low-confidence evidence now stops the expensive generator
 and planner rather than generating first and suppressing afterward.
+
+### June 2026 - Trusted safety derivation Phase 2A
+
+Removed the public API's ability to self-certify safety. Versioned action
+policy now supplies risk and reversibility, durable task state supplies ACK,
+and safety receipts persist policy version plus derived-fact provenance.
+Regression tests reject attempts to submit the removed safety fields.

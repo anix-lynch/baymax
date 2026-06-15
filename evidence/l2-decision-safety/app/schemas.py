@@ -50,12 +50,6 @@ class ActRequest(BaseModel):
     predicted_los_hours: float | None = Field(None, ge=0.0)
     bed_pressure_risk: RiskLevel = "low"
     ingested_at: str | None = Field(None, description="evidence freshness stamp (ISO8601)")
-    confidence_before: float | None = Field(None, ge=0.0, le=1.0)
-    confidence_after: float | None = Field(1.0, ge=0.0, le=1.0)
-    evidence_conflicts: list[str] = Field(default_factory=list)
-    action_risk: RiskLevel = "low"
-    reversible: bool = True
-    receiver_acknowledged: bool = True
 
 
 class ActReceipt(BaseModel):
@@ -224,6 +218,8 @@ class CaseStatus(BaseModel):
     confidence_after: float | None = Field(None, ge=0.0, le=1.0)
     latest_safety_decision: SafetyDecision | None = None
     latest_reason_code: str | None = None
+    latest_policy_version: str | None = None
+    latest_derived_facts: dict[str, Any] = Field(default_factory=dict)
 
 
 class HealthResponse(BaseModel):

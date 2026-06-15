@@ -8,7 +8,7 @@ recommendations or actions.
 
 ## Current Grade
 
-**B**
+**B+**
 
 Baymax has strong task-specific procedural reasoning. It does not yet have a
 formal reusable library for generalized evidence arbitration, tradeoff
@@ -54,7 +54,7 @@ and durable outcome verification.
 - General policy for choosing reversible alternatives under uncertainty.
 - A reusable protocol for identifying the exact missing information required
   before proceeding.
-- Independent derivation of all decision-safety inputs.
+- Trusted derivation of evidence conflict and calibrated confidence.
 - Counterfactual or second-pass verification of recommendations before they are
   presented.
 
@@ -72,11 +72,12 @@ After a non-`ACT` safety verdict, `/v1/ask` still builds the collaboration
 graph. Bed Ops can appear with `executed=True` and a disposition even when the
 safety decision is `ASK_FOR_INFO` or `SUPPRESS`.
 
-### Safety inputs can be caller assertions
+### Trusted conflict and confidence are unavailable
 
-The action API accepts confidence, conflict, risk, reversibility, and ACK
-fields from the caller. The Brain does not independently derive or verify all
-of them.
+The public action API can no longer assert confidence, conflict, risk,
+reversibility, or ACK. Action risk and reversibility come from versioned
+policy, and ACK comes from durable task state. However, the action loop does
+not yet receive trusted cross-domain conflict or calibrated confidence facts.
 
 ## Evidence Map
 
@@ -114,3 +115,11 @@ now runs before grounded generation and collaboration planning. A non-`ACT`
 verdict returns a deterministic withheld response, no operational
 recommendations, and no executed-looking collaboration plan. Regression tests
 prove the generator and planner are not called.
+
+### June 2026 - Trusted safety derivation Phase 2A
+
+Removed public action-request fields that allowed callers to self-certify
+confidence, conflict, risk, reversibility, and ACK. The Brain now derives
+action risk and reversibility from `action-safety.v1`, verifies ACK from
+durable task state, and persists policy version plus source facts in every
+safety receipt. Trusted conflict and calibrated confidence wiring remain open.

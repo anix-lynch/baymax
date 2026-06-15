@@ -24,6 +24,12 @@ from app.schemas import ERState
 
 from action_engine.adapters import SourceAdapter, SyntheticFixtureAdapter
 from action_engine.contract import CanonicalEvidence, validate_evidence
+from action_engine.policy import (
+    SafetyDerivation,
+    derive_ack_state,
+    derive_pre_action,
+    derive_pre_decision,
+)
 from action_engine.safety import SafetyContext, evaluate_safety
 from action_engine.store import ActionStore
 from action_engine.tools import Injection
@@ -79,7 +85,8 @@ def run_action_loop(
 
     `record` is a source-specific row; `adapter` maps it to the canonical
     contract. `injection` is an optional failure-injection directive (defaults
-    to none / production behavior).
+    to none / production behavior). `safety_context` is an internal test-only
+    failure injection. Public API callers cannot set it.
     """
     adapter = adapter or SyntheticFixtureAdapter()
     injection = injection or Injection.from_raw(record.get("inject"))
@@ -114,19 +121,30 @@ def run_action_loop(
     )
     store.log_event(correlation_id, "intake_accepted", {"lineage": evidence.lineage()})
 
-    base_context = safety_context or SafetyContext(ingested_at=evidence.ingested_at)
-    pre_verdict = evaluate_safety(SafetyContext(
-        ingested_at=base_context.ingested_at,
-        required_evidence_complete=base_context.required_evidence_complete,
-        confidence_before=base_context.confidence_before,
-        confidence_after=base_context.confidence_after,
-        evidence_conflicts=base_context.evidence_conflicts,
-        action_risk=base_context.action_risk,
-        reversible=base_context.reversible,
-        receiver_acknowledged=None,
-        current_stage="pre_decision_safety_review",
-    ))
-    store.record_safety_decision(correlation_id, pre_verdict)
+    if safety_context is None:
+        pre_derivation = derive_pre_decision(evidence)
+    else:
+        pre_derivation = SafetyDerivation(
+            context=SafetyContext(
+                ingested_at=safety_context.ingested_at,
+                required_evidence_complete=safety_context.required_evidence_complete,
+                confidence_before=safety_context.confidence_before,
+                confidence_after=safety_context.confidence_after,
+                evidence_conflicts=safety_context.evidence_conflicts,
+                action_risk=safety_context.action_risk,
+                reversible=safety_context.reversible,
+                receiver_acknowledged=None,
+                current_stage="pre_decision_safety_review",
+            ),
+            facts={"internal_test_override": True},
+            policy_version="internal-test-override.v1",
+        )
+    pre_verdict = evaluate_safety(pre_derivation.context)
+    store.record_safety_decision(
+        correlation_id, pre_verdict,
+        policy_version=pre_derivation.policy_version,
+        derived_facts=pre_derivation.facts,
+    )
     if pre_verdict.decision != "ACT":
         stage = "human_review_required" if pre_verdict.decision == "HUMAN_REVIEW" else "safety_blocked"
         if pre_verdict.decision == "HUMAN_REVIEW":
@@ -158,25 +176,44 @@ def run_action_loop(
         "disposition": disposition, "inputs_used": decision["inputs_used"],
     })
 
+    if safety_context is None:
+        action_derivation = derive_pre_action(evidence, disposition)
+        action_verdict = evaluate_safety(action_derivation.context)
+        store.record_safety_decision(
+            correlation_id, action_verdict,
+            policy_version=action_derivation.policy_version,
+            derived_facts=action_derivation.facts,
+        )
+        if action_verdict.decision != "ACT":
+            store.log_event(correlation_id, "safety_blocked", {
+                "decision": action_verdict.decision,
+                "reason_code": action_verdict.reason_code,
+                "policy_version": action_derivation.policy_version,
+            })
+            return LoopResult(
+                correlation_id=correlation_id, accepted=False,
+                blocked_reason=[action_verdict.reason_code], disposition=disposition, task_id=None,
+                acknowledged=False, action=None, outcome=None, escalation_id=None,
+                safety_decision=action_verdict.decision, safety_reason_code=action_verdict.reason_code,
+            )
+
     idem = _idempotency_key(correlation_id, disposition)
     task_id = f"task:{idem}"
 
     # ── Coordination: durable task + separate receiver ACK ──────────────────
     store.create_task(task_id, correlation_id, kind="action", owner="bed_ops_worker", idempotency_key=idem)
     store.log_event(correlation_id, "task_created", {"task_id": task_id, "idempotency_key": idem})
-    ack_verdict = evaluate_safety(SafetyContext(
-        ingested_at=evidence.ingested_at,
-        required_evidence_complete=base_context.required_evidence_complete,
-        confidence_before=base_context.confidence_before,
-        confidence_after=base_context.confidence_after,
-        evidence_conflicts=base_context.evidence_conflicts,
-        action_risk=base_context.action_risk,
-        reversible=base_context.reversible,
-        receiver_acknowledged=base_context.receiver_acknowledged,
-        current_stage="waiting_for_ack",
-    ))
-    store.record_safety_decision(correlation_id, ack_verdict)
-    if ack_verdict.decision == "WAIT_FOR_ACK":
+    if safety_context is not None and safety_context.receiver_acknowledged is False:
+        ack_verdict = evaluate_safety(SafetyContext(
+            ingested_at=evidence.ingested_at,
+            receiver_acknowledged=False,
+            current_stage="waiting_for_ack",
+        ))
+        store.record_safety_decision(
+            correlation_id, ack_verdict,
+            policy_version="internal-test-override.v1",
+            derived_facts={"internal_test_override": True},
+        )
         store.log_event(correlation_id, "waiting_for_ack", {
             "task_id": task_id, "reason_code": ack_verdict.reason_code,
         })
@@ -192,6 +229,41 @@ def run_action_loop(
     if not acked:
         task = store.get_task(task_id)
         acked = bool(task and task["status"] == "acknowledged")
+    if safety_context is None:
+        ack_derivation = derive_ack_state(evidence, store.get_task(task_id))
+    else:
+        task = store.get_task(task_id)
+        ack_derivation = SafetyDerivation(
+            context=SafetyContext(
+                ingested_at=safety_context.ingested_at,
+                receiver_acknowledged=bool(task and task["status"] == "acknowledged"),
+                current_stage="ack_verification",
+            ),
+            facts={
+                "internal_test_override": True,
+                "receiver_acknowledged": {
+                    "value": bool(task and task["status"] == "acknowledged"),
+                    "source": "durable_store.tasks.status",
+                },
+            },
+            policy_version="internal-test-override.v1",
+        )
+    ack_verdict = evaluate_safety(ack_derivation.context)
+    store.record_safety_decision(
+        correlation_id, ack_verdict,
+        policy_version=ack_derivation.policy_version,
+        derived_facts=ack_derivation.facts,
+    )
+    if ack_verdict.decision != "ACT":
+        store.log_event(correlation_id, "waiting_for_ack", {
+            "task_id": task_id, "reason_code": ack_verdict.reason_code,
+        })
+        return LoopResult(
+            correlation_id=correlation_id, accepted=True, blocked_reason=[ack_verdict.reason_code],
+            disposition=disposition, task_id=task_id, acknowledged=False, action=None,
+            outcome=None, escalation_id=None, safety_decision=ack_verdict.decision,
+            safety_reason_code=ack_verdict.reason_code,
+        )
 
     # ── Hands + Brakes: idempotent execution with bounded retry/escalation ──
     action = execute_action(

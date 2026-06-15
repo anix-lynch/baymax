@@ -7,9 +7,13 @@ idempotent (no duplicate side effect).
 """
 from __future__ import annotations
 from datetime import datetime, timezone
+import os
 import pytest
 from fastapi.testclient import TestClient
 
+from action_engine.loop import run_action_loop
+from action_engine.safety import SafetyContext
+from action_engine.store import ActionStore
 from app.main import app
 
 
@@ -65,7 +69,7 @@ def test_act_missing_or_1970_timestamp_never_commits(client):
     missing = _payload("case-missing-time")
     missing.pop("ingested_at")
     missing_result = client.post("/v1/act", json=missing).json()
-    assert missing_result["safety_decision"] == "ASK_FOR_INFO"
+    assert missing_result["safety_decision"] == "SUPPRESS"
     assert missing_result["after_committed"] is None
 
     stale = _payload("case-stale-time")
@@ -77,10 +81,29 @@ def test_act_missing_or_1970_timestamp_never_commits(client):
 
 
 def test_status_endpoint_reports_waiting_and_blocking_state(client):
-    payload = _payload("case-waiting")
-    payload["receiver_acknowledged"] = False
-    result = client.post("/v1/act", json=payload).json()
-    assert result["safety_decision"] == "WAIT_FOR_ACK"
+    store = ActionStore(os.environ["ACTION_DB_PATH"])
+    try:
+        result = run_action_loop(
+            store=store,
+            record={
+                "correlation_id": "case-waiting",
+                "id": "case-waiting",
+                "evidence": {
+                    "ingested_at": datetime.now(timezone.utc).isoformat(),
+                    "triage_level": "NOW",
+                    "predicted_los_hours": 6,
+                    "bed_pressure_risk": "low",
+                    "er_state": {"available_beds": 3, "occupancy_pct": 70, "queue_length": 2},
+                },
+            },
+            safety_context=SafetyContext(
+                ingested_at=datetime.now(timezone.utc).isoformat(),
+                receiver_acknowledged=False,
+            ),
+        )
+        assert result.safety_decision == "WAIT_FOR_ACK"
+    finally:
+        store.close()
 
     status = client.get("/v1/cases/case-waiting/status")
     assert status.status_code == 200
@@ -91,32 +114,38 @@ def test_status_endpoint_reports_waiting_and_blocking_state(client):
     assert data["blocking_reason"]
 
 
-def test_legendary_safety_envelope_case(client):
-    cid = "legendary-safety-envelope"
-    stale_conflict = _payload(cid)
-    stale_conflict.update({
-        "ingested_at": "1970-01-01T00:00:00Z",
-        "confidence_before": 0.91,
-        "confidence_after": 0.42,
-        "evidence_conflicts": ["patient_history_vs_drug_risk"],
-        "action_risk": "high",
-        "reversible": False,
-    })
-    first = client.post("/v1/act", json=stale_conflict).json()
-    assert first["safety_decision"] == "SUPPRESS"
-    assert first["safety_reason_code"] == "STALE_CAPACITY_STATE"
-    stale_status = client.get(f"/v1/cases/{cid}/status").json()
-    assert stale_status["confidence_before"] == 0.91
-    assert stale_status["confidence_after"] == 0.42
-    assert stale_status["blocking_reason"]
+@pytest.mark.parametrize("field,value", [
+    ("confidence_after", 1.0),
+    ("evidence_conflicts", []),
+    ("action_risk", "low"),
+    ("reversible", True),
+    ("receiver_acknowledged", True),
+])
+def test_public_caller_cannot_self_certify_safety(client, field, value):
+    payload = _payload(f"case-self-certify-{field}")
+    payload[field] = value
+    response = client.post("/v1/act", json=payload)
+    assert response.status_code == 422
 
-    fresh_waiting = _payload(cid)
-    fresh_waiting["receiver_acknowledged"] = False
-    second = client.post("/v1/act", json=fresh_waiting).json()
-    assert second["safety_decision"] == "WAIT_FOR_ACK"
 
-    fresh_acked = _payload(cid)
-    third = client.post("/v1/act", json=fresh_acked).json()
-    assert third["safety_decision"] == "ACT"
-    assert third["after_committed"] is True
-    assert third["outcome_verified"] is True
+def test_status_exposes_versioned_trusted_safety_receipt(client):
+    cid = "case-policy-receipt"
+    result = client.post("/v1/act", json=_payload(cid)).json()
+    assert result["safety_decision"] == "ACT"
+
+    status = client.get(f"/v1/cases/{cid}/status").json()
+    assert status["latest_policy_version"] == "action-safety.v1"
+    assert status["latest_derived_facts"]["caller_safety_overrides_used"] is False
+    assert status["latest_derived_facts"]["receiver_acknowledged"]["source"] == "durable_store.tasks.status"
+
+    store = ActionStore(os.environ["ACTION_DB_PATH"])
+    try:
+        pre_action = store.conn.execute(
+            "SELECT policy_version, derived_facts_json FROM safety_decisions "
+            "WHERE correlation_id=? AND current_stage='pre_action_safety_review'",
+            (cid,),
+        ).fetchone()
+    finally:
+        store.close()
+    assert pre_action["policy_version"] == "action-safety.v1"
+    assert "action-safety.v1.ACTION_POLICY" in pre_action["derived_facts_json"]

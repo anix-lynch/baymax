@@ -25,7 +25,6 @@ from fastapi import APIRouter, HTTPException
 
 from action_engine.adapters import SyntheticFixtureAdapter
 from action_engine.loop import run_action_loop
-from action_engine.safety import SafetyContext
 from action_engine.store import ActionStore
 from app.schemas import ActReceipt, ActRequest, CaseStatus
 
@@ -61,15 +60,6 @@ def act(req: ActRequest) -> ActReceipt:
             store=store,
             record=record,
             adapter=SyntheticFixtureAdapter(),
-            safety_context=SafetyContext(
-                ingested_at=freshness_stamp,
-                confidence_before=req.confidence_before,
-                confidence_after=req.confidence_after,
-                evidence_conflicts=req.evidence_conflicts,
-                action_risk=req.action_risk,
-                reversible=req.reversible,
-                receiver_acknowledged=req.receiver_acknowledged,
-            ),
         )
         action = store.get_action(result.correlation_id)
         outcome = store.get_outcome(result.correlation_id)

@@ -52,17 +52,19 @@ copy the museum into the movie.
 
 ## Current Score
 
-Current controllable L2 maturity: **70/100** after Phase 1.
+Current controllable L2 maturity: **73/100** after Phase 2A.
 
-The previous audited baseline was **66/100**. Phase 1 added four points by
-making the recommendation path fail before generation and planning.
+The audited baseline was **66/100**. Phase 1 added four points by making the
+recommendation path fail before generation and planning. Phase 2A added three
+points by removing public safety self-certification and deriving action policy
+and ACK from trusted state.
 
 | Surface | Score | Current truth |
 |---|---:|---|
 | Recruiter movie | 9/10 | Attention Flip, Decision Flip, Brake Save are memorable |
-| Brain | 13/15 | Non-ACT now stops before generation/planning; general arbitration remains |
+| Brain | 14/15 | Non-ACT stops before generation/planning; action risk is versioned policy |
 | Hands | 14/15 | Durable action, idempotency, retry, false-success detection |
-| Immune | 10/15 | Safety envelope works; several action safety facts remain caller-controlled |
+| Immune | 12/15 | Caller cannot self-certify safety; trusted conflict/confidence derivation remains |
 | Nerves | 7/10 | Durable status/ACK exists; receiver is not independently invoked |
 | Heart + Ethics | 5/10 | Principles exist; consent, authority, and follow-up closure are not runtime |
 | A/B/C live wiring | 6/15 | Eyes are real; online Nose remains a cheap rule gate |
@@ -143,28 +145,30 @@ Acceptance:
 
 ### Phase 2 - Trusted Safety Derivation
 
-Status: **NEXT**
+Status: **PARTIAL - Phase 2A COMPLETE; Phase 2B NEXT**
 
 Goal: stop trusting API callers to certify whether an action is safe.
 
 Required changes:
 
-- Derive evidence conflict from trusted evidence records.
-- Derive action risk and reversibility from a versioned action policy.
-- Derive receiver ACK from durable task state.
-- Derive confidence from model/evidence outputs, not arbitrary request values.
-- Record derived facts and policy version in every safety receipt.
-- Keep request fields only as explicitly labeled test overrides, or remove
-  them from the public contract.
+- [x] Derive action risk and reversibility from a versioned action policy.
+- [x] Derive receiver ACK from durable task state.
+- [x] Record derived facts and policy version in every safety receipt.
+- [x] Remove confidence, conflict, risk, reversibility, and ACK overrides from
+  the public action contract.
+- [ ] Derive evidence conflict from trusted cross-domain evidence records.
+- [ ] Derive confidence from calibrated model/evidence outputs.
 
 Acceptance:
 
-- A caller cannot turn an unsafe case into `ACT` by changing confidence,
+- [x] A caller cannot turn an unsafe case into `ACT` by changing confidence,
   conflict, risk, reversibility, or ACK fields.
-- Every safety decision identifies source facts and policy version.
-- Existing tests and action eval remain green.
+- [x] Every safety decision identifies source facts and policy version.
+- [x] Existing tests and action eval remain green.
+- [ ] Trusted conflict and confidence facts change or suppress a real action.
 
-Expected maturity gain: **+4**.
+Earned maturity gain: **+3**. Final point requires trusted conflict and
+confidence wiring; recording them as unavailable is honest but not derivation.
 
 ### Phase 3 - Independent Receiver And ACK Deadline
 

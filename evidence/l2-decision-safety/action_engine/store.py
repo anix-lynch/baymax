@@ -123,6 +123,8 @@ CREATE TABLE IF NOT EXISTS safety_decisions (
     confidence_before REAL,
     confidence_after  REAL,
     current_stage     TEXT NOT NULL,
+    policy_version    TEXT,
+    derived_facts_json TEXT,
     created_at        TEXT NOT NULL
 );
 """
@@ -142,7 +144,14 @@ class ActionStore:
         self.conn = sqlite3.connect(self.db_path)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
+        self._ensure_column("safety_decisions", "policy_version", "TEXT")
+        self._ensure_column("safety_decisions", "derived_facts_json", "TEXT")
         self.conn.commit()
+
+    def _ensure_column(self, table: str, column: str, declaration: str) -> None:
+        columns = {row["name"] for row in self.conn.execute(f"PRAGMA table_info({table})")}
+        if column not in columns:
+            self.conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {declaration}")
 
     def close(self) -> None:
         self.conn.close()
@@ -162,16 +171,23 @@ class ActionStore:
         ).fetchall()
         return [{"stage": r["stage"], "detail": json.loads(r["detail_json"]), "ts": r["ts"]} for r in rows]
 
-    def record_safety_decision(self, correlation_id: str, verdict: Any) -> None:
+    def record_safety_decision(
+        self,
+        correlation_id: str,
+        verdict: Any,
+        *,
+        policy_version: str | None = None,
+        derived_facts: dict[str, Any] | None = None,
+    ) -> None:
         self.conn.execute(
             "INSERT INTO safety_decisions "
             "(correlation_id, decision, reason_code, blocking_reason, next_expected_event, "
-            " confidence_before, confidence_after, current_stage, created_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?)",
+            " confidence_before, confidence_after, current_stage, policy_version, derived_facts_json, created_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
             (
                 correlation_id, verdict.decision, verdict.reason_code, verdict.blocking_reason,
                 verdict.next_expected_event, verdict.confidence_before, verdict.confidence_after,
-                verdict.current_stage, _now(),
+                verdict.current_stage, policy_version, json.dumps(derived_facts or {}), _now(),
             ),
         )
         self.conn.commit()
@@ -235,6 +251,8 @@ class ActionStore:
             "confidence_after": safety["confidence_after"] if safety else None,
             "latest_safety_decision": safety["decision"] if safety else None,
             "latest_reason_code": safety["reason_code"] if safety else None,
+            "latest_policy_version": safety["policy_version"] if safety else None,
+            "latest_derived_facts": json.loads(safety["derived_facts_json"] or "{}") if safety else {},
         }
 
     # ── cases / decisions ───────────────────────────────────────────────────
