@@ -222,6 +222,7 @@ class CaseStatus(BaseModel):
     latest_derived_facts: dict[str, Any] = Field(default_factory=dict)
     ack_deadline_at: str | None = None
     ack_wait_seconds: int | None = Field(None, ge=0)
+    followup: dict[str, Any] | None = None
 
 
 class ReceiverAckReceipt(BaseModel):
@@ -231,6 +232,29 @@ class ReceiverAckReceipt(BaseModel):
     owner: str
     acknowledged: bool
     task_status: str
+
+
+class FollowupReceipt(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    followup_id: str
+    correlation_id: str
+    owner: str
+    state: Literal[
+        "followup_due", "outreach_requested", "acknowledged", "reassessed",
+        "closed_safe", "escalated", "unable_to_verify",
+    ]
+    due_at: str
+    retry_budget: int
+    created_at: str
+    updated_at: str
+
+
+class FollowupTransitionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    target_state: Literal[
+        "outreach_requested", "acknowledged", "reassessed",
+        "closed_safe", "escalated", "unable_to_verify",
+    ]
 
 
 class HealthResponse(BaseModel):

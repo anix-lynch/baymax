@@ -26,7 +26,14 @@ from fastapi import APIRouter, HTTPException
 from action_engine.adapters import SyntheticFixtureAdapter
 from action_engine.loop import run_action_loop
 from action_engine.store import ActionStore
-from app.schemas import ActReceipt, ActRequest, CaseStatus, ReceiverAckReceipt
+from app.schemas import (
+    ActReceipt,
+    ActRequest,
+    CaseStatus,
+    FollowupReceipt,
+    FollowupTransitionRequest,
+    ReceiverAckReceipt,
+)
 
 router = APIRouter()
 
@@ -132,3 +139,30 @@ def receiver_ack(correlation_id: str) -> ReceiverAckReceipt:
         acknowledged=acknowledged,
         task_status=task["status"],
     )
+
+
+@router.post("/cases/{correlation_id}/followup", response_model=FollowupReceipt)
+def create_followup(correlation_id: str) -> FollowupReceipt:
+    store = ActionStore(_db_path())
+    try:
+        if store.case_status(correlation_id) is None:
+            raise HTTPException(status_code=404, detail="case not found")
+        followup = store.create_followup(correlation_id)
+    finally:
+        store.close()
+    return FollowupReceipt(**followup)
+
+
+@router.post("/followups/{followup_id:path}/transition", response_model=FollowupReceipt)
+def transition_followup(followup_id: str, req: FollowupTransitionRequest) -> FollowupReceipt:
+    store = ActionStore(_db_path())
+    try:
+        try:
+            followup = store.transition_followup(followup_id, req.target_state)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="follow-up not found")
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc))
+    finally:
+        store.close()
+    return FollowupReceipt(**followup)

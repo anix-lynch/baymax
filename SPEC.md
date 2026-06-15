@@ -52,7 +52,7 @@ copy the museum into the movie.
 
 ## Current Score
 
-Current controllable L2 maturity: **77/100** after Phase 3B.
+Current controllable L2 maturity: **80/100** after Phase 4.
 
 The audited baseline was **66/100**. Phase 1 added four points by making the
 recommendation path fail before generation and planning. Phase 2A added three
@@ -63,6 +63,8 @@ Phase 3A added two points by requiring an independently invoked receiver ACK
 before public action execution.
 Phase 3B added one point by enforcing ACK deadlines and durable stale-owner
 escalation.
+Phase 4 added three points by turning Care Follow-up from a plan into a
+durable lifecycle with guarded closure and human escalation.
 
 | Surface | Score | Current truth |
 |---|---:|---|
@@ -71,7 +73,7 @@ escalation.
 | Hands | 14/15 | Durable action, idempotency, retry, false-success detection |
 | Immune | 13/15 | Trusted conflict and evidence sufficiency stop actions; calibration remains |
 | Nerves | 10/10 | Independent ACK, deadline, timeout, escalation, and visible wait state |
-| Heart + Ethics | 5/10 | Principles exist; consent, authority, and follow-up closure are not runtime |
+| Heart + Ethics | 8/10 | Follow-up closure is durable; consent and authority remain design gaps |
 | A/B/C live wiring | 6/15 | Eyes are real; online Nose remains a cheap rule gate |
 | Runtime/deployment | 6/10 | Live service/showroom exists; operational runtime is not fully unified |
 
@@ -203,7 +205,7 @@ Earned maturity gain: **+3**.
 
 ### Phase 4 - Durable Care Follow-Up
 
-Status: **PENDING**
+Status: **COMPLETE**
 
 Goal: prove Baymax does not abandon non-NOW cases after making a plan.
 
@@ -219,11 +221,11 @@ followup_due
 
 Acceptance:
 
-- No care-complete claim without a durable closure state.
-- Follow-up has owner, deadline, retry budget, and safe escalation.
-- Status endpoint exposes the current follow-up state.
+- [x] No care-complete claim without a durable closure state.
+- [x] Follow-up has owner, deadline, retry budget, and safe escalation.
+- [x] Status endpoint exposes the current follow-up state.
 
-Expected maturity gain: **+3**.
+Earned maturity gain: **+3**.
 
 ### Phase 5 - Online Nose Wiring
 

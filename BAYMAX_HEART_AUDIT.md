@@ -90,3 +90,11 @@ of patient consent, clinician authorization, or contested preference.
 
 Recorded protective behavior and the gap between follow-up intention and
 verified care completion.
+
+### June 2026 - Durable Care Follow-up Phase 4
+
+Care Follow-up is no longer only a planner node. The runtime persists
+`followup_due -> outreach_requested -> acknowledged -> reassessed ->
+closed_safe`, with `escalated` and `unable_to_verify` exits. `closed_safe`
+cannot be claimed before reassessment. Each record has owner, due time, retry
+budget, status projection, and durable nurse-review escalation.

@@ -216,3 +216,48 @@ def test_ack_deadline_timeout_escalates_and_late_ack_is_rejected(client):
     assert replay["safety_decision"] == "HUMAN_REVIEW"
     assert replay["safety_reason_code"] == "RECEIVER_ACK_TIMEOUT"
     assert replay["after_committed"] is None
+
+
+def test_care_followup_requires_reassessment_before_safe_closure(client):
+    cid = "case-followup-closure"
+    _act_to_completion(client, _payload(cid))
+
+    created = client.post(f"/v1/cases/{cid}/followup").json()
+    assert created["state"] == "followup_due"
+    assert created["owner"] == "care_followup_worker"
+    followup_id = created["followup_id"]
+
+    premature = client.post(
+        f"/v1/followups/{followup_id}/transition",
+        json={"target_state": "closed_safe"},
+    )
+    assert premature.status_code == 409
+
+    for state in ("outreach_requested", "acknowledged", "reassessed", "closed_safe"):
+        result = client.post(
+            f"/v1/followups/{followup_id}/transition",
+            json={"target_state": state},
+        )
+        assert result.status_code == 200
+        assert result.json()["state"] == state
+
+    status = client.get(f"/v1/cases/{cid}/status").json()
+    assert status["followup"]["state"] == "closed_safe"
+
+
+def test_care_followup_escalation_creates_durable_human_work(client):
+    cid = "case-followup-escalation"
+    _act_to_completion(client, _payload(cid))
+    followup = client.post(f"/v1/cases/{cid}/followup").json()
+    result = client.post(
+        f"/v1/followups/{followup['followup_id']}/transition",
+        json={"target_state": "escalated"},
+    ).json()
+    assert result["state"] == "escalated"
+
+    store = ActionStore(os.environ["ACTION_DB_PATH"])
+    try:
+        escalation = store.get_escalation(cid)
+    finally:
+        store.close()
+    assert escalation["owner"] == "nurse_review_queue"

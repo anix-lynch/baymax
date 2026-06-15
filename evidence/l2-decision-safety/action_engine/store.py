@@ -128,6 +128,17 @@ CREATE TABLE IF NOT EXISTS safety_decisions (
     derived_facts_json TEXT,
     created_at        TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS followups (
+    followup_id     TEXT PRIMARY KEY,
+    correlation_id  TEXT NOT NULL,
+    owner           TEXT NOT NULL,
+    state           TEXT NOT NULL,
+    due_at          TEXT NOT NULL,
+    retry_budget    INTEGER NOT NULL,
+    created_at      TEXT NOT NULL,
+    updated_at      TEXT NOT NULL
+);
 """
 
 
@@ -267,6 +278,7 @@ class ActionStore:
                 )).total_seconds()))
                 if task and task["status"] in {"created", "timed_out"} else None
             ),
+            "followup": self.latest_followup(correlation_id),
         }
 
     # ── cases / decisions ───────────────────────────────────────────────────
@@ -363,6 +375,60 @@ class ActionStore:
             (correlation_id,),
         ).fetchall()
         return [dict(r) for r in rows]
+
+    # ── durable Care Follow-up lifecycle ───────────────────────────────────
+    def create_followup(self, correlation_id: str, due_seconds: int = 3600) -> dict[str, Any]:
+        followup_id = f"followup:{correlation_id}"
+        now = _now()
+        due_at = (datetime.now(timezone.utc) + timedelta(seconds=due_seconds)).isoformat()
+        self.conn.execute(
+            "INSERT OR IGNORE INTO followups "
+            "(followup_id, correlation_id, owner, state, due_at, retry_budget, created_at, updated_at) "
+            "VALUES (?,?,?, 'followup_due', ?, 2, ?, ?)",
+            (followup_id, correlation_id, "care_followup_worker", due_at, now, now),
+        )
+        self.conn.commit()
+        self.log_event(correlation_id, "followup_due", {"followup_id": followup_id, "due_at": due_at})
+        return self.get_followup(followup_id) or {}
+
+    def get_followup(self, followup_id: str) -> Optional[dict[str, Any]]:
+        row = self.conn.execute("SELECT * FROM followups WHERE followup_id=?", (followup_id,)).fetchone()
+        return dict(row) if row else None
+
+    def latest_followup(self, correlation_id: str) -> Optional[dict[str, Any]]:
+        row = self.conn.execute(
+            "SELECT * FROM followups WHERE correlation_id=? ORDER BY created_at DESC LIMIT 1",
+            (correlation_id,),
+        ).fetchone()
+        return dict(row) if row else None
+
+    def transition_followup(self, followup_id: str, target_state: str) -> dict[str, Any]:
+        allowed = {
+            "followup_due": {"outreach_requested", "escalated"},
+            "outreach_requested": {"acknowledged", "unable_to_verify", "escalated"},
+            "acknowledged": {"reassessed", "unable_to_verify", "escalated"},
+            "reassessed": {"closed_safe", "escalated", "unable_to_verify"},
+        }
+        current = self.get_followup(followup_id)
+        if current is None:
+            raise KeyError(followup_id)
+        if target_state not in allowed.get(current["state"], set()):
+            raise ValueError(f"invalid follow-up transition: {current['state']} -> {target_state}")
+        self.conn.execute(
+            "UPDATE followups SET state=?, updated_at=? WHERE followup_id=?",
+            (target_state, _now(), followup_id),
+        )
+        self.conn.commit()
+        self.log_event(current["correlation_id"], f"followup_{target_state}", {"followup_id": followup_id})
+        if target_state == "escalated":
+            self.create_escalation(
+                escalation_id=f"esc:{followup_id}",
+                correlation_id=current["correlation_id"],
+                reason="Care follow-up requires human review.",
+                owner="nurse_review_queue",
+                attempts_used=0,
+            )
+        return self.get_followup(followup_id) or {}
 
     # ── world state (idempotent) ────────────────────────────────────────────
     def get_committed(self, idempotency_key: str) -> Optional[dict[str, Any]]:
