@@ -66,6 +66,13 @@ escalation.
 Phase 4 added three points by turning Care Follow-up from a plan into a
 durable lifecycle with guarded closure and human escalation.
 
+Showroom hardening (no maturity points claimed): the audit now emits an
+`honesty_ledger` that gates the headline verdict at the weakest load-bearing
+organ. NOSE (signal-routing) is the weakest leaf and caps the headline at 🟡.
+This hardens claim integrity, not capability — it is the spotlight that makes
+Phase 5 the highest-leverage next move. Showroom commit `6446d59`; last
+verified showroom commit `44ca919`.
+
 | Surface | Score | Current truth |
 |---|---:|---|
 | Recruiter movie | 9/10 | Attention Flip, Decision Flip, Brake Save are memorable |
@@ -229,7 +236,8 @@ Earned maturity gain: **+3**.
 
 ### Phase 5 - Online Nose Wiring
 
-Status: **PENDING**
+Status: **ACTIVE — next phase.** The honesty ledger pins NOSE as the weakest
+load-bearing organ capping the headline at 🟡; this phase lifts that headline.
 
 Goal: replace the per-case keyword gate with a served, evaluated signal
 contract without opening an ML-career side quest.
