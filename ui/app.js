@@ -1,20 +1,20 @@
 const organs = [
-  ["nose", "👃", "Nose"],
-  ["left", "👁", "Patient eye"],
-  ["right", "👁", "Drug eye"],
-  ["brain", "🧠", "Brain"],
-  ["mouth", "🗣", "Mouth"],
-  ["nerves", "⚡", "Nerves"],
-  ["hands", "🤝", "Hands"],
-  ["brakes", "🛑", "Brakes"],
-  ["immune", "🛡", "Immune"],
+  ["nose", "👃", "Nose · what matters first"],
+  ["left", "👁", "Eyes · her history"],
+  ["right", "💊", "Eyes · her medicines"],
+  ["brain", "🧠", "Brain · piece it together"],
+  ["mouth", "🗣", "Voice · say it simply"],
+  ["nerves", "⚡", "Reflex · pass it on"],
+  ["hands", "🤝", "Hands · get it done"],
+  ["brakes", "🛑", "Brakes · stop if unsure"],
+  ["immune", "🛡", "Memory · past slip-ups"],
 ];
 
 const scenes = {
   discovery: {
     patient: "Daughter at intake: “My mother’s legs are swollen.” · Patient: the mother, 71F",
     boundary: "This retrieves a synthetic precedent and suggests a question. It does not diagnose the patient.",
-    money: "NOBODY MENTIONED HEART FAILURE. BAYMAX RETRIEVED IT ANYWAY.",
+    money: "Nobody mentioned her heart failure — I found it anyway.",
     moneyClass: "",
     receipt: "The discovery is bound to source L1-000497 and its synthetic encounter receipt.",
     steps: [
@@ -124,11 +124,42 @@ function setOrgan(id, state, label) {
   organ.querySelector(".organ-state").textContent = label;
 }
 
-function addThought(icon, copy) {
+function addThought(icon, copy, extra) {
   const item = document.createElement("li");
   item.className = "thought";
-  item.innerHTML = `<span class="thought-icon">${icon}</span><div class="thought-copy">${copy}</div>`;
+  item.innerHTML = `<span class="thought-icon">${icon}</span><div class="thought-copy">${copy}${extra ? `<div class="thought-extra">${extra}</div>` : ""}</div>`;
   transcript.appendChild(item);
+}
+
+const EV_PLAIN = {
+  "chronic heart failure history": "heart failure",
+  "chronic kidney disease (stage 3)": "kidney disease (stage 3)",
+  "type 2 diabetes": "diabetes",
+  "prior fluid overload / pulmonary edema": "fluid in the lungs before",
+  "reduced urine output": "peeing less lately",
+  "bilateral lower-extremity edema": "both legs swollen",
+};
+
+function chipRow(items) {
+  return `<div class="thought-chips">${items.map((x) => `<span>${x}</span>`).join("")}</div>`;
+}
+
+function buildDiscoverySteps(d) {
+  const r = d.disposition_recommendation;
+  const er = r.bed_booking.er_state;
+  const ev = (d.retrieved_evidence || []).map((e) => EV_PLAIN[e] || e);
+  const meds = (d.medications_on_record || []).slice();
+  return [
+    ["nose", "👃", "The family used everyday words. Let me turn “swollen legs” into medical clues before I look."],
+    ["left", "👁", "Wait a second… let me open her old records first."],
+    ["left", "👁", "Nobody mentioned these — but they were on file:", chipRow(ev)],
+    ["right", "💊", "Her current medicines — and why they matter with weak kidneys:", chipRow(meds.concat(["too much salt → more swelling"]))],
+    ["immune", "🛡", "What the last doctor did: kept her two days, drained the fluid, sent her home — but no kidney follow-up."],
+    ["brain", "🧠", "Here’s the real story: <strong>diabetes → kidney trouble → fluid builds up → swollen legs</strong>. The same loop that came back."],
+    ["brakes", "🛑", "The quick read says “send her home” — same as last time. I won’t repeat that without a proper check."],
+    ["hands", "🤝", `The ER is full (${er.occupancy_pct}% full, ${er.available_beds} beds free). I won’t leave her waiting in line — I’m flagging her for a ward bed.`],
+    ["mouth", "🗣", "Let me say it two ways — one for the doctor, one for the family."],
+  ];
 }
 
 function validateTruth(caseId) {
@@ -196,17 +227,17 @@ function renderResult() {
     .join("");
   const tidy = (s) => (s || "").replace(/_/g, " ");
   resultCard.innerHTML = `
-    <div class="result-head">DISPOSITION · what I recommend <span class="sim">simulation</span></div>
+    <div class="result-head">What I’d recommend <span class="sim">simulation</span></div>
     <div class="triage-flip">
-      <span class="flip-from">Surface ESI ${r.esi_level} · ${r.surface_triage_tier}</span>
+      <span class="flip-from">Quick read: ${r.surface_triage_tier} (ESI ${r.esi_level})</span>
       <b>→</b>
-      <span class="flip-to">Baymax recommends ${r.triage_tier}</span>
+      <span class="flip-to">I’d raise it to ${r.triage_tier}</span>
       <span class="tier-pills">${pills}</span>
     </div>
     <div class="result-grid">
-      <div class="result-cell"><span class="rc-label">Recommended setting</span><strong>${tidy(r.recommended_care_setting)}</strong></div>
-      <div class="result-cell"><span class="rc-label">Surface bed engine</span><strong>${tidy(r.surface_bed_disposition)}</strong></div>
-      <div class="result-cell"><span class="rc-label">Safe wait</span><strong>${r.max_wait_minutes} min</strong></div>
+      <div class="result-cell"><span class="rc-label">Where she should go</span><strong>${tidy(r.recommended_care_setting)}</strong></div>
+      <div class="result-cell"><span class="rc-label">Quick-read bed call</span><strong>${tidy(r.surface_bed_disposition)}</strong></div>
+      <div class="result-cell"><span class="rc-label">Safe to wait</span><strong>${r.max_wait_minutes} min</strong></div>
     </div>
     <div class="escalation">⚠️ ${r.escalation_trigger}</div>
     <div class="booking">
@@ -229,13 +260,13 @@ function play(caseId) {
   thinkingTitle.textContent = caseId === "discovery"
     ? "What Baymax discovered before answering"
     : "I am reviewing this case";
-  if (caseId === "discovery") renderDiscovery();
   boundary.textContent = scene.boundary;
   receiptText.textContent = "I am verifying the outcome.";
   workingLabel.textContent = "I am reviewing the case...";
   workingDot.classList.add("busy");
 
-  scene.steps.forEach(([organ, icon, copy], index) => {
+  scene.steps.forEach((step, index) => {
+    const [organ, icon, copy, extra] = step;
     timerIds.push(setTimeout(() => {
       document.querySelectorAll(".organ.active").forEach((item) => {
         item.classList.remove("active");
@@ -243,8 +274,8 @@ function play(caseId) {
         item.querySelector(".organ-state").textContent = "Complete";
       });
       setOrgan(organ, organ === "brakes" ? "blocked" : "active", organ === "brakes" ? "Guarding" : "Working");
-      addThought(icon, copy);
-    }, 650 * index));
+      addThought(icon, copy, extra);
+    }, 750 * index));
   });
 
   timerIds.push(setTimeout(() => {
@@ -263,7 +294,7 @@ function play(caseId) {
     receiptState.classList.toggle("done", truthful);
     workingLabel.textContent = truthful ? "Case review complete." : "I will not guess.";
     workingDot.classList.remove("busy");
-  }, 650 * scene.steps.length + 250));
+  }, 750 * scene.steps.length + 250));
 }
 
 const ledgerLabels = {
@@ -302,6 +333,9 @@ async function loadAudit() {
     if (!response.ok) throw new Error("audit unavailable");
     audit = await response.json();
     renderHonesty();
+    if (audit.trajectories && audit.trajectories.retrieval_discovery) {
+      scenes.discovery.steps = buildDiscoverySteps(audit.trajectories.retrieval_discovery);
+    }
   } catch {
     receiptText.textContent = "I cannot find the audit receipt yet. I am still checking.";
   }
