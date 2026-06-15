@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,21 +18,21 @@
         <div class="baymax-mark" aria-hidden="true"><span></span><i></i><span></span></div>
         <div>
           <p class="eyebrow">B A Y M A X</p>
-          <h1>ER intern ที่ไม่เหนื่อย ไม่ลืม ไม่อายที่จะถาม</h1>
+          <h1>An ER intern who never tires, forgets, or hides uncertainty</h1>
         </div>
       </div>
       <div class="topbar-actions">
-        <div class="working-state"><span class="working-dot"></span><span id="working-label">ผมพร้อมช่วยดูเคสครับ</span></div>
+        <div class="working-state"><span class="working-dot"></span><span id="working-label">I am ready to review a case.</span></div>
         <a class="source-link" href="https://github.com/anix-lynch/baymax" target="_blank" rel="noopener">&lt;/&gt; source</a>
       </div>
     </header>
 
     <section class="intro">
-      <p class="baymax-quote">“ผมไม่ได้ฉลาดเพราะมีอวัยวะเยอะ ผมฉลาดเพราะรู้ว่าควรใช้อวัยวะไหน เมื่อไร และยอมเปลี่ยนใจเมื่ออีกมุมเปิดความจริงใหม่”</p>
+      <p class="baymax-quote">“I am not capable because I have many organs. I am capable because I know which one to use, when to use it, and when new evidence should change my mind.”</p>
       <div class="case-tabs" role="tablist" aria-label="Baymax demo cases">
-        <button class="case-tab" data-case="attention" role="tab">01 · ดมก่อนดู</button>
-        <button class="case-tab active" data-case="decision" role="tab">02 · เปลี่ยนใจ</button>
-        <button class="case-tab" data-case="brake" role="tab">03 · หยุดตัวเอง</button>
+        <button class="case-tab" data-case="attention" role="tab">01 · Focus attention</button>
+        <button class="case-tab active" data-case="decision" role="tab">02 · Change course</button>
+        <button class="case-tab" data-case="brake" role="tab">03 · Stop safely</button>
       </div>
     </section>
 
@@ -41,11 +41,11 @@
         <div class="panel-heading">
           <div>
             <p class="eyebrow">THINKING OUT LOUD</p>
-            <h2>ผมกำลังช่วยดูเคสนี้ครับ</h2>
+            <h2>I am reviewing this case</h2>
           </div>
           <button id="replay" class="replay-button" type="button" aria-label="Replay current case">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-            ดูอีกครั้ง
+            Replay
           </button>
         </div>
         <div id="patient-card" class="patient-card"></div>
@@ -57,14 +57,14 @@
         <div class="panel-heading">
           <div>
             <p class="eyebrow">LIVE ORGANS</p>
-            <h2>อวัยวะที่กำลังช่วยอยู่</h2>
+            <h2>Organs currently working</h2>
           </div>
           <span class="truth-pill">simulation</span>
         </div>
         <div id="organs" class="organ-list"></div>
         <div class="boundary-card">
           <p class="eyebrow">HONEST BOUNDARY</p>
-          <p id="boundary">ผมเป็นระบบจำลองครับ ไม่ใช่หมอ และไม่เชื่อมต่อโรงพยาบาลจริง</p>
+          <p id="boundary">I am a simulation, not a clinician, and I am not connected to a real hospital.</p>
         </div>
       </aside>
     </section>
@@ -73,9 +73,9 @@
       <div class="panel-heading">
         <div>
           <p class="eyebrow">HONESTY LEDGER · WEAKEST-LEAF LAW</p>
-          <h2>ผมเคลมได้แค่เท่าที่ proof ซื้อให้ครับ</h2>
+          <h2>I claim only what the evidence can prove</h2>
         </div>
-        <span id="honesty-headline" class="truth-pill">รอผล</span>
+        <span id="honesty-headline" class="truth-pill">Awaiting proof</span>
       </div>
       <p id="honesty-claim" class="honesty-claim"></p>
       <div id="honesty-ledger" class="honesty-grid"></div>
@@ -84,12 +84,12 @@
     <footer class="receipt">
       <div>
         <p class="eyebrow">OUTCOME RECEIPT</p>
-        <p id="receipt-text">ผมกำลังตรวจผลให้อีกครั้งครับ</p>
+        <p id="receipt-text">I am verifying the outcome.</p>
       </div>
       <div class="receipt-actions">
-        <span id="receipt-state" class="receipt-state">รอผล</span>
-        <a href="../outputs/baymax_audit.json">ดูหลักฐาน JSON</a>
-        <a href="../outputs/deployment_readiness_receipt.json">ดู rollout drill</a>
+        <span id="receipt-state" class="receipt-state">Awaiting result</span>
+        <a href="../outputs/baymax_audit.json">View audit JSON</a>
+        <a href="../outputs/deployment_readiness_receipt.json">View rollout drill</a>
       </div>
     </footer>
   </main>

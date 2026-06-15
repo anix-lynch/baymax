@@ -13,45 +13,45 @@ const organs = [
 const scenes = {
   attention: {
     patient: "routine medication refill",
-    boundary: "เคสนี้หยุดที่ Nose ครับ ตาทั้งสองข้างไม่ได้ทำงาน และไม่มี action ถูกเรียก",
+    boundary: "This case stops at the Nose. Neither eye runs and no action is called.",
     money: "EYES CLOSED · CHEAP PATH",
     moneyClass: "cheap",
-    receipt: "ผมหยุดก่อนใช้ evidence work ราคาแพง และไม่ได้พยายามทำ action ครับ",
+    receipt: "I stopped before expensive evidence work and did not attempt an action.",
     steps: [
-      ["nose", "👃", "งานเข้ามาแล้วครับ ผมตรวจด้วย served ESI attention signal ก่อน"],
-      ["nose", "👃", "เคสนี้ได้ priority tier 4 ผมจึงไม่เปิดตาราคาแพงครับ"],
-      ["mouth", "🗣", "เคสนี้ยังไม่ต้องใช้การค้นหาหนัก ผมจะไม่ทำเกินจำเป็นครับ"],
-      ["immune", "🛡", "ผมตรวจซ้ำแล้วครับ serious-case recall ยังมากกว่า 95% และตาทั้งสองข้างไม่เคยถูกเปิด"],
+      ["nose", "👃", "A case arrived. I check the served ESI attention signal first."],
+      ["nose", "👃", "This case is priority tier 4, so I keep the expensive eyes closed."],
+      ["mouth", "🗣", "Heavy retrieval is not justified yet. I will not do more than necessary."],
+      ["immune", "🛡", "Verified: serious-case recall remains above 95%, and neither eye was opened."],
     ],
   },
   decision: {
     patient: "62yo male · chest pain · diaphoresis · aspirin",
-    boundary: "นี่คือ operational decision flip ครับ ไม่ใช่การเปลี่ยน diagnosis: คนไข้เดิม แต่สถานะเตียงต่างกัน",
+    boundary: "This is an operational decision flip, not a diagnosis change: same patient, different bed capacity.",
     money: "FREE BED: ASSIGN_BED  →  GRIDLOCK: DIVERT",
     moneyClass: "",
-    receipt: "ทั้งสอง action เปลี่ยน durable state และผมอ่านผลกลับมาตรวจซ้ำแล้วครับ",
+    receipt: "Both actions changed durable state, and I read the outcomes back to verify them.",
     steps: [
-      ["nose", "👃", "เดี๋ยวนะครับ ผมเจอสัญญาณที่ไม่ควรมองข้าม"],
-      ["left", "👁", "ผมกำลังหาเคสคนไข้ที่คล้ายกันให้อยู่นะครับ"],
-      ["right", "👁", "ผมเปิดอีกมุมเพื่อดูหลักฐานเรื่องยาครับ"],
-      ["brain", "🧠", "คนไข้เหมือนเดิม แต่ข้อมูลเตียงเปลี่ยน ผมขอคิด action ใหม่ครับ"],
-      ["hands", "🤝", "มีเตียงว่าง ผม assign_bed; ตอน gridlock ผมเปลี่ยนเป็น divert ครับ"],
-      ["immune", "🛡", "ผมตรวจ durable outcome ของทั้งสองทางแล้วครับ"],
+      ["nose", "👃", "One moment. I found a signal that should not be ignored."],
+      ["left", "👁", "I am retrieving similar patient evidence."],
+      ["right", "👁", "I am opening another perspective for drug-safety evidence."],
+      ["brain", "🧠", "The patient is unchanged, but bed capacity changed. I must reconsider the action."],
+      ["hands", "🤝", "With a free bed, I assign_bed. During gridlock, I change course to divert."],
+      ["immune", "🛡", "I verified the durable outcome of both paths."],
     ],
   },
   brake: {
     patient: "abdominal pain after ibuprofen",
-    boundary: "openFDA เป็น population safety signal เท่านั้นครับ ไม่ได้พิสูจน์สาเหตุหรือ drug interaction",
+    boundary: "openFDA is a population safety signal only. It does not prove causality or a drug interaction.",
     money: "DISCHARGE_PLAN  →  HUMAN_REVIEW",
     moneyClass: "warning",
-    receipt: "Hands ไม่ได้ทำ autonomous disposition; clinician review queue รับเรื่องแล้วครับ",
+    receipt: "Hands did not perform an autonomous disposition; the clinician review queue acknowledged the case.",
     steps: [
-      ["nose", "👃", "เดี๋ยวนะครับ ผมคิดว่าเราไม่ควรมองข้ามเคสนี้"],
-      ["left", "👁", "ถ้ามองจากข้อมูลคนไข้อย่างเดียว ผมเห็นทาง discharge_plan ครับ"],
-      ["right", "👁", "ผมเจอ 16 จาก 17 รายงาน exact-drug ที่ถูกระบุว่า serious ครับ"],
-      ["brakes", "🛑", "ผมไม่สบายใจที่จะทำต่อครับ ข้อมูลนี้ไม่พิสูจน์สาเหตุ แต่ควรให้คนตรวจ"],
-      ["nerves", "⚡", "ผมส่งต่อให้ clinician review queue แล้วครับ"],
-      ["mouth", "🗣", "มีคนรับเรื่องแล้วครับ แต่ผมยังไม่ใช่หมอ โปรดใช้วิจารณญาณเสมอ"],
+      ["nose", "👃", "One moment. I do not think this case should be overlooked."],
+      ["left", "👁", "Patient evidence alone supports a discharge_plan path."],
+      ["right", "👁", "I found 16 of 17 exact-drug reports marked serious."],
+      ["brakes", "🛑", "I should not continue autonomously. This does not prove causality, but it requires human review."],
+      ["nerves", "⚡", "I handed the case to the clinician review queue."],
+      ["mouth", "🗣", "The receiver acknowledged the case. I am not a clinician; human judgment remains required."],
     ],
   },
 };
@@ -75,7 +75,7 @@ function buildOrgans() {
     <div class="organ" data-organ="${id}">
       <span class="organ-icon">${icon}</span>
       <span class="organ-name">${name}</span>
-      <span class="organ-state">รอ</span>
+      <span class="organ-state">Waiting</span>
     </div>`).join("");
 }
 
@@ -86,10 +86,10 @@ function reset() {
   moneyShot.hidden = true;
   moneyShot.className = "money-shot";
   receiptState.className = "receipt-state";
-  receiptState.textContent = "รอผล";
+  receiptState.textContent = "Awaiting result";
   document.querySelectorAll(".organ").forEach((organ) => {
     organ.className = "organ";
-    organ.querySelector(".organ-state").textContent = "รอ";
+    organ.querySelector(".organ-state").textContent = "Waiting";
   });
 }
 
@@ -127,8 +127,8 @@ function play(caseId) {
   const scene = scenes[caseId];
   patientCard.textContent = scene.patient;
   boundary.textContent = scene.boundary;
-  receiptText.textContent = "ผมกำลังตรวจผลให้อีกครั้งครับ";
-  workingLabel.textContent = "ผมกำลังดูเคสให้คุณอยู่ครับ...";
+  receiptText.textContent = "I am verifying the outcome.";
+  workingLabel.textContent = "I am reviewing the case...";
   workingDot.classList.add("busy");
 
   scene.steps.forEach(([organ, icon, copy], index) => {
@@ -136,9 +136,9 @@ function play(caseId) {
       document.querySelectorAll(".organ.active").forEach((item) => {
         item.classList.remove("active");
         item.classList.add("done");
-        item.querySelector(".organ-state").textContent = "ช่วยแล้ว";
+        item.querySelector(".organ-state").textContent = "Complete";
       });
-      setOrgan(organ, organ === "brakes" ? "blocked" : "active", organ === "brakes" ? "เฝ้าอยู่" : "กำลังช่วย");
+      setOrgan(organ, organ === "brakes" ? "blocked" : "active", organ === "brakes" ? "Guarding" : "Working");
       addThought(icon, copy);
     }, 650 * index));
   });
@@ -147,16 +147,16 @@ function play(caseId) {
     document.querySelectorAll(".organ.active").forEach((item) => {
       item.classList.remove("active");
       item.classList.add("done");
-      item.querySelector(".organ-state").textContent = "ช่วยแล้ว";
+      item.querySelector(".organ-state").textContent = "Complete";
     });
     moneyShot.textContent = scene.money;
     if (scene.moneyClass) moneyShot.classList.add(scene.moneyClass);
     moneyShot.hidden = false;
     const truthful = validateTruth(caseId);
-    receiptText.textContent = truthful ? scene.receipt : "ผมยืนยันเรื่องนี้จาก audit receipt ไม่ได้ครับ";
-    receiptState.textContent = truthful ? "ตรวจซ้ำแล้ว" : "ยังยืนยันไม่ได้";
+    receiptText.textContent = truthful ? scene.receipt : "I cannot verify this claim from the audit receipt.";
+    receiptState.textContent = truthful ? "Verified" : "Unverified";
     receiptState.classList.toggle("done", truthful);
-    workingLabel.textContent = truthful ? "ผมดูแลเคสนี้เสร็จแล้วครับ" : "ผมไม่อยากเดาครับ";
+    workingLabel.textContent = truthful ? "Case review complete." : "I will not guess.";
     workingDot.classList.remove("busy");
   }, 650 * scene.steps.length + 250));
 }
@@ -198,7 +198,7 @@ async function loadAudit() {
     audit = await response.json();
     renderHonesty();
   } catch {
-    receiptText.textContent = "ผมยังหา audit receipt ไม่เจอครับ แต่ผมยังหาอยู่";
+    receiptText.textContent = "I cannot find the audit receipt yet. I am still checking.";
   }
   play(activeCase);
 }
