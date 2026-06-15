@@ -2,7 +2,7 @@
 
 **An evidence-to-action ER nurse assistant simulation**
 
-![Baymax changes its action when ER capacity changes](demo.gif)
+![Baymax reads the hidden history behind one sentence, traces the trajectory, brakes on the kidney, then speaks two ways — clinically to the doctor, plainly to the daughter](demo.gif)
 
 🔗 **Live:** https://baymax-bice.vercel.app
 
