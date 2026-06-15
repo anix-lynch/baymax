@@ -39,10 +39,11 @@ MOTHER = {
             "fluid retention over one week, with fatigue and mild dyspnea on exertion and "
             "orthopnea when lying flat. Home medications: metformin, lisinopril, furosemide. "
             "Reduced urine output over the past three days."),
-    "physician_note": ("History of congestive heart failure. Prior ED visit eight months ago: "
-                       "admitted two days for bilateral leg edema, diuresed, symptoms resolved, "
-                       "discharged without nephrology follow-up. Pattern consistent with recurrent "
-                       "fluid overload from combined cardiac and renal disease."),
+    "physician_note": ("History of congestive heart failure. Prior ED visit eight months ago at "
+                       "CKD stage 2: admitted two days, treated with a mild diuretic, fluid resolved, "
+                       "discharged without nephrology follow-up. Kidney function has since declined to "
+                       "stage 3. Pattern consistent with recurrent fluid overload from combined cardiac "
+                       "and renal disease."),
     "bp_systolic": "158", "bp_diastolic": "92", "heart_rate": "92",
     "respiratory_rate": "20", "temperature_f": "98.4", "spo2_pct": "94",
     "lab_panel_json": "{}",

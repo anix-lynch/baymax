@@ -149,12 +149,14 @@ function buildDiscoverySteps(d) {
   const er = r.bed_booking.er_state;
   const ev = (d.retrieved_evidence || []).map((e) => EV_PLAIN[e] || e);
   const meds = (d.medications_on_record || []).slice();
+  const s = d.state_awareness || {};
   return [
     ["nose", "👃", "The family used everyday words. Let me turn “swollen legs” into medical clues before I look."],
     ["left", "👁", "Wait a second… let me open her old records first."],
     ["left", "👁", "Nobody mentioned these — but they were on file:", chipRow(ev)],
     ["right", "💊", "Her current medicines — and why they matter with weak kidneys:", chipRow(meds.concat(["too much salt → more swelling"]))],
-    ["immune", "🛡", "What the last doctor did: kept her two days, drained the fluid, sent her home — but no kidney follow-up."],
+    ["immune", "🛡", `Last time this worked: a mild water pill eight months ago — back when her kidneys were at ${s.past_state || "an earlier stage"}.`],
+    ["brain", "🧠", `But her kidneys are worse now: <strong>${s.past_state || "stage 2"} → ${s.current_state || "stage 3"}</strong>. The old fix isn’t safe to repeat — let me re-think it.`],
     ["brain", "🧠", "Here’s the real story: <strong>diabetes → kidney trouble → fluid builds up → swollen legs</strong>. The same loop that came back."],
     ["brakes", "🛑", "The quick read says “send her home” — same as last time. I won’t repeat that without a proper check."],
     ["hands", "🤝", `The ER is full (${er.occupancy_pct}% full, ${er.available_beds} beds free). I won’t leave her waiting in line — I’m flagging her for a ward bed.`],
@@ -221,6 +223,10 @@ function renderResult() {
   const r = d.disposition_recommendation;
   const dv = d.dual_voice || {};
   const bb = r.bed_booking;
+  const sa = d.state_awareness || {};
+  const stateShift = sa.state_changed
+    ? `<div class="state-shift"><span class="rc-label">🔁 Why not just repeat last time</span><p>It worked before at <strong>${sa.past_state}</strong>, but she’s now at <strong>${sa.current_state}</strong> — so I’d change the plan, not copy it.</p></div>`
+    : "";
   const tiers = ["GREEN", "YELLOW", "RED"];
   const pills = tiers
     .map((t) => `<span class="tier ${t.toLowerCase()}${t === r.triage_tier ? " on" : ""}">${t}</span>`)
@@ -240,6 +246,7 @@ function renderResult() {
       <div class="result-cell"><span class="rc-label">Safe to wait</span><strong>${r.max_wait_minutes} min</strong></div>
     </div>
     <div class="escalation">⚠️ ${r.escalation_trigger}</div>
+    ${stateShift}
     <div class="booking">
       <span class="rc-label">🛏 Bed booking · real durable action</span>
       <p>ER ${bb.er_state.occupancy_pct}% full · ${bb.er_state.available_beds} free · queue ${bb.er_state.queue_length}. Committed “${tidy(bb.surface_action_taken)}”, re-read &amp; verified: ${bb.outcome_verified ? "yes" : "no"}. ${bb.note}</p>

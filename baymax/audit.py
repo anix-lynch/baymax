@@ -242,6 +242,38 @@ def _triage_tier(esi: int) -> str:
     return "RED" if esi <= 2 else "YELLOW" if esi == 3 else "GREEN"
 
 
+def _state_awareness(narrative: str) -> dict[str, Any]:
+    """Compare the patient's PAST state (when a prior treatment worked) with the
+    CURRENT state. A prior success is not enough — if the state has worsened, the
+    old protocol is no longer the safe default. This is state-aware trade-off
+    reasoning, not retrieval."""
+    low = narrative.lower()
+    m_past = re.search(r"at ckd stage\s*(\d)", low)
+    m_curr = re.search(r"kidney disease stage\s*(\d)", low)
+    past_stage = int(m_past.group(1)) if m_past else None
+    current_stage = int(m_curr.group(1)) if m_curr else None
+    prior_success = "resolved" in low and "diuretic" in low
+    prior_treatment = "mild diuretic" if "mild diuretic" in low else None
+    state_changed = (
+        past_stage is not None and current_stage is not None and current_stage > past_stage
+    )
+    return {
+        "prior_success": prior_success,
+        "prior_treatment": prior_treatment,
+        "past_state": f"CKD stage {past_stage}" if past_stage else None,
+        "current_state": f"CKD stage {current_stage}" if current_stage else None,
+        "state_changed": state_changed,
+        "previous_protocol_still_optimal": prior_success and not state_changed,
+        "reasoning": (
+            "A previous mild-diuretic approach worked, but kidney function has declined "
+            f"(stage {past_stage} -> stage {current_stage}); repeating it is no longer the safe "
+            "default. Modify the approach and add nephrology review."
+            if state_changed
+            else "No material state change since the previous successful treatment."
+        ),
+    }
+
+
 def _discovery_disposition(triage_level: str, er_state: dict[str, Any], db_path: Path) -> dict[str, Any]:
     """Run the REAL durable bed action so the mother case carries a real disposition."""
     _load_body()
@@ -307,6 +339,8 @@ def retrieval_discovery() -> dict[str, Any]:
          if any(w in s.lower() for w in ("prior", "admitted", "discharged"))),
         None,
     )
+
+    state = _state_awareness(narrative)
 
     esi, red_flags = rule_based_esi(narrative)
     triage_level = _triage_from_esi(esi)
@@ -428,6 +462,7 @@ def retrieval_discovery() -> dict[str, Any]:
             "recommended_tier": recommended_tier,
             "red_flags": red_flags,
         },
+        "state_awareness": state,
         "disposition_recommendation": disposition_recommendation,
         "dual_voice": dual_voice,
         "next_question": "Has her urine output decreased over the last few days?",

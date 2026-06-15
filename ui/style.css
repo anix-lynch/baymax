@@ -249,3 +249,10 @@ h2 { font-size: 16px; letter-spacing: -.02em; }
   background: var(--color-accent-bg-solid); color: var(--color-text-primary);
   font-size: 12px; border: 1px solid var(--color-border);
 }
+
+/* state-aware moment: prior success vs current state */
+.state-shift {
+  background: var(--color-yellow-solid); border: 1px solid var(--color-yellow);
+  border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+}
+.state-shift p { margin: 4px 0 0; font-size: 13px; color: var(--color-text-primary); line-height: 1.5; }

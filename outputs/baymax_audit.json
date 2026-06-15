@@ -48,7 +48,7 @@
         "lisinopril",
         "furosemide"
       ],
-      "prior_care": "Prior ED visit eight months ago: admitted two days for bilateral leg edema, diuresed, symptoms resolved, discharged without nephrology follow-up.",
+      "prior_care": "Prior ED visit eight months ago at CKD stage 2: admitted two days, treated with a mild diuretic, fluid resolved, discharged without nephrology follow-up.",
       "evidence_path": [
         "leg swelling (what the family said)",
         "type 2 diabetes",
@@ -62,6 +62,15 @@
         "triage_tier": "GREEN",
         "recommended_tier": "YELLOW",
         "red_flags": []
+      },
+      "state_awareness": {
+        "prior_success": true,
+        "prior_treatment": "mild diuretic",
+        "past_state": "CKD stage 2",
+        "current_state": "CKD stage 3",
+        "state_changed": true,
+        "previous_protocol_still_optimal": false,
+        "reasoning": "A previous mild-diuretic approach worked, but kidney function has declined (stage 2 -> stage 3); repeating it is no longer the safe default. Modify the approach and add nephrology review."
       },
       "disposition_recommendation": {
         "surface_triage_tier": "GREEN",
@@ -106,7 +115,7 @@
         "condition": "Heart Failure",
         "chief_complaint": "Bilateral leg swelling and fluid retention for one week",
         "hpi": "71-year-old female with type-2 diabetes and chronic kidney disease stage 3 presents with progressive bilateral lower-extremity edema, leg swelling and fluid retention over one week, with fatigue and mild dyspnea on exertion and orthopnea when lying flat. Home medications: metformin, lisinopril, furosemide. Reduced urine output over the past three days.",
-        "assessment_plan": "History of congestive heart failure. Prior ED visit eight months ago: admitted two days for bilateral leg edema, diuresed, symptoms resolved, discharged without nephrology follow-up. Pattern consistent with recurrent fluid overload from combined cardiac and renal disease."
+        "assessment_plan": "History of congestive heart failure. Prior ED visit eight months ago at CKD stage 2: admitted two days, treated with a mild diuretic, fluid resolved, discharged without nephrology follow-up. Kidney function has since declined to stage 3. Pattern consistent with recurrent fluid overload from combined cardiac and renal disease."
       }
     },
     "attention_skip": {

@@ -209,3 +209,16 @@ def test_contract_rejects_downstream_invented_fields():
         module.validate_against_contract(
             {"Name": "x", "made_up_downstream_field": "y"}, ["Name", "Age"]
         )
+
+
+def test_state_awareness_detects_worsened_state_and_changes_plan():
+    result = retrieval_discovery()
+    s = result["state_awareness"]
+    # A prior treatment succeeded, but the patient's state has worsened since.
+    assert s["prior_success"] is True
+    assert s["past_state"] == "CKD stage 2"
+    assert s["current_state"] == "CKD stage 3"
+    assert s["state_changed"] is True
+    # Therefore the previous protocol is no longer the safe default.
+    assert s["previous_protocol_still_optimal"] is False
+    assert "stage 2 -> stage 3" in s["reasoning"]
