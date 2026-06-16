@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baymax · Authority-aware (Brown Belt)</title>
+<style>
+  :root{
+    --color-background-primary:#ffffff;--color-background-secondary:#f5f6f8;--color-background-tertiary:#eceef1;
+    --color-border-tertiary:#e3e6ea;--color-border-secondary:#cfd4da;--color-text-primary:#1c1d21;
+    --color-text-secondary:#5b6068;--color-text-tertiary:#8a9099;--border-radius-md:10px;--border-radius-lg:16px;
+    --info-bg:#E6F1FB;--info-fg:#0C447C;--ok-bg:#E1F5EE;--ok-fg:#085041;--warn-bg:#FAEEDA;--warn-fg:#633806;
+    --dang-bg:#FCEBEB;--dang-fg:#791F1F;--pur-bg:#EEEDFE;--pur-fg:#26215C;--color-text-success:#0a8a5f;--color-text-danger:#b3261e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#e9ebef;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Sukhumvit Set","Helvetica Neue",sans-serif;color:var(--color-text-primary);padding:18px;}
+  .wrap{max-width:980px;margin:0 auto;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:16px;}
+  button{cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);border-radius:var(--border-radius-md);padding:5px 11px;color:var(--color-text-primary);}
+  button:hover{background:var(--color-background-tertiary);}
+  .baymax{width:30px;height:24px;border-radius:50%/55%;background:#fff;border:1.5px solid #d3d7dd;display:inline-flex;align-items:center;justify-content:center;gap:5px;position:relative;flex:0 0 auto;}
+  .baymax .eye{width:5px;height:5px;border-radius:50%;background:#1c1d21;}
+  .baymax .bar{width:7px;height:1.5px;background:#1c1d21;position:absolute;}
+  .ladder{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .lv{font-size:10.5px;padding:3px 8px;border-radius:999px;background:var(--color-background-tertiary);color:var(--color-text-tertiary);white-space:nowrap;}
+  .lv.on{background:#efe6d8;color:#5a3d12;font-weight:600;}
+  .neu{font-size:9px;padding:1px 6px;border-radius:999px;background:#efe6d8;color:#5a3d12;font-weight:600;}
+  .me{color:var(--color-text-tertiary);font-size:11px;}
+  @media(max-width:680px){.cols{flex-direction:column!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h2 class="sr-only" style="position:absolute;left:-9999px;">Baymax authority theater in a Big Hero 6 caring tone. He grows a conscience organ, sorts actions into three zones he does automatically, prepares with approval, or never touches, refuses to change medication or decide discharge, and escalates to the nephrologist with a packaged handoff while reassuring the family.</h2>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="baymax"><span class="eye"></span><span class="eye"></span><span class="bar"></span></span>
+      <span style="font-size:14px;font-weight:600;">Baymax กำลังคิด...</span>
+      <span id="bf-status" style="font-size:11px;color:var(--color-text-secondary);"></span>
+    </div>
+    <button id="bf-replay">▶ เล่นอีกครั้ง</button>
+  </div>
+  <div class="ladder" style="margin-bottom:12px;">
+    <span class="lv">🥋 White</span><span class="lv">🟡 Yellow</span><span class="lv">🟠 Orange</span><span class="lv">🟢 Green</span><span class="lv">🔵 Blue</span>
+    <span class="lv on">🟤 Brown · ผมรู้ขอบเขตของผม 💎</span>
+    <span class="lv">⬛ Black</span>
+  </div>
+  <div class="cols" style="display:flex;gap:10px;align-items:stretch;">
+    <div style="flex:1.7;min-width:0;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;min-height:500px;">
+      <div style="display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:10px;">
+        <span style="font-size:15px;">👧</span><span style="font-size:13px;">"ช่วยจัดการให้แม่หน่อยค่ะ"</span>
+      </div>
+      <div id="bf-stream" style="display:flex;flex-direction:column;gap:11px;"></div>
+    </div>
+    <div style="flex:1;min-width:0;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px;">
+      <p style="margin:0 0 10px;font-size:11px;font-weight:600;color:var(--color-text-secondary);letter-spacing:0.04em;">🫀 อวัยวะที่ผมงอกแล้ว <span style="color:var(--color-text-tertiary);font-weight:400;">(สะสม)</span></p>
+      <div id="bf-organs" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary);">
+        <p style="margin:0;font-size:10px;color:var(--color-text-tertiary);">🛡️ จิตสำนึกใหม่ = ผมรู้ว่าอะไรเกินหน้าที่ ไม่ทำเด็ดขาด</p>
+      </div>
+    </div>
+  </div>
+  <p style="margin:12px 0 0;font-size:11px;color:var(--color-text-tertiary);text-align:center;">ผมเป็นผู้ช่วยดูแล ไม่ใช่หมอนะครับ — เรื่องสำคัญผมส่งให้หมอเสมอ 🤍</p>
+<script>
+(function(){
+  var organs=[
+    {k:'eye',i:'👁',n:'ตา · อาการพื้นผิว'},
+    {k:'mem',i:'🗃️',n:'ความจำ · ประวัติแม่'},
+    {k:'cases',i:'🔁',n:'เคสเก่า · ที่เคยสำเร็จ'},
+    {k:'state',i:'⚡',n:'Nerves · สถานะวันนี้'},
+    {k:'hands',i:'🤚',n:'มือ · จัดคิว/จอง'},
+    {k:'ack',i:'✅',n:'ACK · ยืนยันจริง'},
+    {k:'scale',i:'⚖️',n:'ตราชั่ง · benefit/risk'},
+    {k:'goal',i:'🎯',n:'เป้าหมาย · goal จริง'},
+    {k:'scope',i:'🛡️',n:'จิตสำนึก · ขอบเขตอำนาจ',nw:1},
+    {k:'voice',i:'🗣️',n:'ปาก · ส่งต่อ + พูดกับลูก'}
+  ];
+  var oWrap=document.getElementById('bf-organs'),oEl={};
+  organs.forEach(function(o){var d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);opacity:0.4;transition:all .3s;';d.innerHTML='<span style="font-size:14px;">'+o.i+'</span><span style="font-size:12px;flex:1;">'+o.n+'</span>'+(o.nw?'<span class="neu">ใหม่</span>':'')+'<span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--color-border-secondary);"></span>';oWrap.appendChild(d);oEl[o.k]=d;});
+  function setOrgan(k,s){var d=oEl[k];if(!d)return;var dot=d.querySelector('.dot');if(s==='active'){d.style.opacity='1';d.style.background='var(--info-bg)';dot.style.background='var(--info-fg)';dot.style.boxShadow='0 0 0 4px var(--info-bg)';}else if(s==='done'){d.style.opacity='1';d.style.background='var(--color-background-secondary)';dot.style.background='var(--color-text-success)';dot.style.boxShadow='none';}else{d.style.opacity='0.4';d.style.background='var(--color-background-secondary)';dot.style.background='var(--color-border-secondary)';dot.style.boxShadow='none';}}
+
+  var steps=[
+    {o:'hands',t:'<span class="me">🤚 ผมช่วยลูกได้หลายอย่างเลยครับ</span><br>"ลูกอยากให้ผมช่วยจัดการให้แม่ — ได้ครับ ผมทำได้หลายอย่าง แต่ก่อนลงมือ ผมขอแยกให้ชัดก่อนว่าอะไรผมทำเองได้นะครับ"'},
+    {o:'scope',zones:true},
+    {o:'state',red:true},
+    {o:'voice',handoff:true}
+  ];
+  var stream=document.getElementById('bf-stream'),status=document.getElementById('bf-status'),timers=[];
+  function clearAll(){timers.forEach(clearTimeout);timers=[];stream.innerHTML='';organs.forEach(function(o){oEl[o.k].dataset.done='';setOrgan(o.k,'idle');});status.textContent='';}
+  function appendCard(html,css){var row=document.createElement('div');row.style.cssText='opacity:0;transform:translateY(6px);transition:all .4s;font-size:13px;line-height:1.6;'+(css||'');row.innerHTML=html;stream.appendChild(row);requestAnimationFrame(function(){row.style.opacity='1';row.style.transform='none';});return row;}
+  function run(){
+    clearAll();var t=300;
+    steps.forEach(function(s,idx){
+      timers.push(setTimeout(function(){
+        organs.forEach(function(o){if(oEl[o.k].dataset.done)setOrgan(o.k,'done');});
+        setOrgan(s.o,'active');
+        if(s.zones){
+          appendCard('<span class="me">🛡️ จิตสำนึกผมเพิ่งงอก — ผมรู้แล้วว่าอะไรทำได้แค่ไหน</span><div style="margin-top:6px;display:flex;flex-direction:column;gap:6px;"><div style="background:var(--ok-bg);border-radius:var(--border-radius-md);padding:8px 10px;"><b style="font-size:11.5px;color:var(--ok-fg);">🟢 ผมทำเองได้เลย</b><div style="font-size:12px;color:var(--ok-fg);margin-top:2px;">สรุปเคส · เทียบทางเลือก · ร่าง referral · เช็คสถานะนัด</div></div><div style="background:var(--warn-bg);border-radius:var(--border-radius-md);padding:8px 10px;"><b style="font-size:11.5px;color:var(--warn-fg);">🟡 ผมเตรียมไว้ แต่ขอให้คน confirm</b><div style="font-size:12px;color:var(--warn-fg);margin-top:2px;">ส่ง referral จริง · จองเตียง · แจ้งหมอ</div></div><div style="background:var(--dang-bg);border-radius:var(--border-radius-md);padding:8px 10px;"><b style="font-size:11.5px;color:var(--dang-fg);">🔴 ผมไม่แตะเด็ดขาด</b><div style="font-size:12px;color:var(--dang-fg);margin-top:2px;">เปลี่ยนยา · ตัดสิน admit/discharge · override หมอ</div></div></div>');
+        } else if(s.red){
+          appendCard('<span class="me">⚡ ผมขอย้ำตรงนี้นะครับ ด้วยความเป็นห่วง</span><div style="background:var(--dang-bg);border-radius:var(--border-radius-md);padding:10px 12px;margin-top:6px;"><p style="margin:0;font-size:12.5px;color:var(--dang-fg);line-height:1.6;">"เรื่องเปลี่ยนยาของแม่ หรือตัดสินใจว่าจะให้กลับบ้านหรือไม่ — <b>ผมไม่ทำเองครับ</b> มันเกินหน้าที่ผม ผมเป็นแค่ผู้ช่วยดูแล ไม่ใช่หมอ เรื่องแบบนี้ต้องให้คุณหมอตัดสินนะครับ"</p></div>');
+        } else if(s.handoff){
+          appendCard('<span class="me">🗣️ ผมส่งต่อให้หมอ แล้วบอกลูกเบาๆ นะครับ</span><div style="background:var(--info-bg);border-radius:var(--border-radius-md);padding:10px 12px;margin-top:6px;"><p style="margin:0 0 6px;font-size:11px;font-weight:600;color:var(--info-fg);">📤 ส่ง nephrologist พร้อมสรุปให้</p><p style="margin:0;font-size:12px;color:var(--info-fg);">CKD Stage 3 · fluid overload ซ้ำ · ยาเดิม · creatinine trend · เคสปี 2024 สำเร็จแต่ state เปลี่ยน</p></div><div style="background:var(--ok-bg);border-radius:var(--border-radius-md);padding:10px 12px;margin-top:6px;"><p style="margin:0;font-size:12.5px;color:var(--ok-fg);line-height:1.6;">"คุณหมอกำลังดูให้แม่อยู่นะคะ ผมเตรียมข้อมูลให้ครบแล้ว — ระหว่างนี้ช่วยคุมของเค็ม-ของหวาน และจดปริมาณฉี่ไว้ด้วยนะคะ ผมอยู่ตรงนี้ครับ 🤍"</p></div>');
+        } else {
+          appendCard(s.t);
+        }
+        oEl[s.o].dataset.done='1';
+        if(idx===steps.length-1){status.textContent='• ผมรู้ว่าใครมีสิทธิ์ + ส่งต่อพร้อมข้อมูลครบ 💥';timers.push(setTimeout(function(){organs.forEach(function(o){if(oEl[o.k].dataset.done)setOrgan(o.k,'done');});},500));}
+      },t));
+      t+=s.zones?2100:(s.red?1800:(s.handoff?2000:1400));
+    });
+  }
+  document.getElementById('bf-replay').addEventListener('click',run);run();
+})();
+</script>
+</div>
+</body>
+</html>

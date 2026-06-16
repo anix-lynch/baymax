@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baymax · State-aware Reasoning</title>
+<style>
+  :root{
+    --color-background-primary:#ffffff;
+    --color-background-secondary:#f5f6f8;
+    --color-background-tertiary:#eceef1;
+    --color-border-tertiary:#e3e6ea;
+    --color-border-secondary:#cfd4da;
+    --color-text-primary:#1c1d21;
+    --color-text-secondary:#5b6068;
+    --color-text-tertiary:#8a9099;
+    --border-radius-md:10px;
+    --border-radius-lg:16px;
+    /* semantic */
+    --info-bg:#E6F1FB; --info-fg:#0C447C;
+    --ok-bg:#E1F5EE;  --ok-fg:#085041;
+    --warn-bg:#FAEEDA; --warn-fg:#633806;
+    --dang-bg:#FCEBEB; --dang-fg:#791F1F;
+    --pur-bg:#EEEDFE;  --pur-fg:#26215C;
+    --color-text-info:var(--info-fg);
+    --color-background-info:var(--info-bg);
+    --color-text-success:#0a8a5f;
+    --color-text-danger:#b3261e;
+    --color-background-danger:var(--dang-bg);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#e9ebef;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Sukhumvit Set","Helvetica Neue",sans-serif;color:var(--color-text-primary);padding:18px;}
+  .wrap{max-width:980px;margin:0 auto;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:16px;}
+  button{cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);border-radius:var(--border-radius-md);padding:5px 11px;color:var(--color-text-primary);}
+  button:hover{background:var(--color-background-tertiary);}
+
+  /* Baymax face */
+  .baymax{width:30px;height:24px;border-radius:50%/55%;background:#fff;border:1.5px solid #d3d7dd;display:inline-flex;align-items:center;justify-content:center;gap:5px;box-shadow:inset 0 -2px 4px rgba(0,0,0,.04);flex:0 0 auto;}
+  .baymax .eye{width:5px;height:5px;border-radius:50%;background:#1c1d21;}
+  .baymax .bar{width:7px;height:1.5px;background:#1c1d21;position:absolute;}
+  .face{position:relative;}
+
+  /* level ladder */
+  .ladder{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .lv{font-size:10.5px;padding:3px 8px;border-radius:999px;background:var(--color-background-tertiary);color:var(--color-text-tertiary);white-space:nowrap;}
+  .lv.on{background:var(--pur-bg);color:var(--pur-fg);font-weight:600;}
+
+  .matrix{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;}
+  .matrix th,.matrix td{padding:6px 8px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary);}
+  .matrix th{font-weight:600;color:var(--color-text-secondary);font-size:11px;}
+  .matrix td.dim{color:var(--color-text-secondary);}
+  .pillA{font-size:10px;padding:2px 7px;border-radius:999px;background:var(--warn-bg);color:var(--warn-fg);}
+  .pillB{font-size:10px;padding:2px 7px;border-radius:999px;background:var(--ok-bg);color:var(--ok-fg);}
+  @media(max-width:680px){.cols{flex-direction:column!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h2 class="sr-only" style="position:absolute;left:-9999px;">Baymax state-aware reasoning theater: retrieves history, finds a past successful case, then detects that the patient's current state changed (CKD Stage 2 to Stage 3), re-evaluates with a multidimensional trade-off, and recommends a different, kidney-safe approach personalized to this patient — speaking both clinically to the doctor and plainly to the daughter.</h2>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="baymax face"><span class="eye"></span><span class="eye"></span><span class="bar"></span></span>
+      <span style="font-size:14px;font-weight:600;">Baymax กำลังคิด...</span>
+      <span id="bf-status" style="font-size:11px;color:var(--color-text-secondary);"></span>
+    </div>
+    <button id="bf-replay">▶ เล่นอีกครั้ง</button>
+  </div>
+
+  <div class="ladder" style="margin-bottom:12px;">
+    <span class="lv" id="lv1">Lv1 · Retrieval</span><span style="color:var(--color-text-tertiary);">→</span>
+    <span class="lv" id="lv2">Lv2 · Evidence Arbitration</span><span style="color:var(--color-text-tertiary);">→</span>
+    <span class="lv" id="lv3">Lv3 · Trade-off Reasoning 💥</span>
+  </div>
+
+  <div class="cols" style="display:flex;gap:10px;align-items:stretch;">
+
+    <!-- reasoning stream -->
+    <div style="flex:1.7;min-width:0;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;min-height:480px;">
+      <div style="display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:10px;">
+        <span style="font-size:15px;">👵</span><span style="font-size:13px;">"ขาแม่บวมค่ะ"</span><span style="font-size:11px;color:var(--color-text-tertiary);">— ประโยคเดียว เหมือนเดิมเป๊ะ</span>
+      </div>
+      <div id="bf-stream" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
+    <!-- organs / nerves + brain -->
+    <div style="flex:1;min-width:0;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px;">
+      <p style="margin:0 0 10px;font-size:11px;font-weight:600;color:var(--color-text-secondary);letter-spacing:0.04em;">🫀 เส้นประสาท + สมอง ที่ทำงาน</p>
+      <div id="bf-organs" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary);">
+        <p style="margin:0 0 2px;font-size:10px;color:var(--color-text-tertiary);">⚡ Nerves = เราอยู่ตรงไหนตอนนี้</p>
+        <p style="margin:0;font-size:10px;color:var(--color-text-tertiary);">🧠 Brain = แล้วควรทำอะไร</p>
+      </div>
+    </div>
+
+  </div>
+  <p style="margin:12px 0 0;font-size:11px;color:var(--color-text-tertiary);text-align:center;">state-aware reasoning — ไม่ใช่การวินิจฉัย/สั่งยา · ผมไม่ใช่หมอนะครับ 🤍</p>
+
+<script>
+(function(){
+  var organs=[
+    {k:'eye',i:'👁',n:'ตา · อาการพื้นผิว'},
+    {k:'mem',i:'🗃️',n:'ความจำ · ประวัติแม่'},
+    {k:'drug',i:'💊',n:'ยา · ที่แม่กินอยู่'},
+    {k:'cases',i:'🔁',n:'เคสเก่า · ที่เคยสำเร็จ'},
+    {k:'state',i:'⚡',n:'Nerves · สถานะวันนี้'},
+    {k:'brain',i:'🧠',n:'Brain · ชั่งน้ำหนัก'},
+    {k:'brake',i:'🛑',n:'เบรก · กันไตพัง'},
+    {k:'voice',i:'🗣️',n:'ปาก · พูด 2 ภาษา'}
+  ];
+  var oWrap=document.getElementById('bf-organs'),oEl={};
+  organs.forEach(function(o){var d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);opacity:0.4;transition:all .3s;';d.innerHTML='<span style="font-size:14px;">'+o.i+'</span><span style="font-size:12px;flex:1;">'+o.n+'</span><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--color-border-secondary);"></span>';oWrap.appendChild(d);oEl[o.k]=d;});
+  function setOrgan(k,s){var d=oEl[k];if(!d)return;var dot=d.querySelector('.dot');if(s==='active'){d.style.opacity='1';d.style.background='var(--info-bg)';dot.style.background='var(--info-fg)';dot.style.boxShadow='0 0 0 4px var(--info-bg)';}else if(s==='done'){d.style.opacity='1';d.style.background='var(--color-background-secondary)';dot.style.background='var(--color-text-success)';dot.style.boxShadow='none';}else{d.style.opacity='0.4';d.style.background='var(--color-background-secondary)';dot.style.background='var(--color-border-secondary)';dot.style.boxShadow='none';}}
+
+  function lv(id){['lv1','lv2','lv3'].forEach(function(x){document.getElementById(x).classList.remove('on');});if(id)document.getElementById(id).classList.add('on');}
+
+  var steps=[
+    {o:'eye',lv:'lv1',t:'👁 เก็บอาการพื้นผิว: <b>ขาบวม</b>'},
+    {o:'mem',lv:'lv1',t:'🗃️ เปิดประวัติแม่... ไม่มีใครบอก แต่ผมเจอ:',chips:[['❤️ CHF','dang'],['🧪 CKD','ok'],['🩸 เบาหวาน','warn'],['🫁 น้ำท่วมปอด','info']]},
+    {o:'drug',lv:'lv1',t:'💊 ดูยาที่แม่กินอยู่ตอนนี้:',chips:[['ยาเบาหวาน','warn'],['ยาความดัน','info'],['⚠️ เกลือสูง = บวมหนักขึ้น','dang']]},
+    {o:'cases',lv:'lv1',t:'🔁 เจอเคสเก่าที่ <b>เคยสำเร็จ</b> ของแม่คนเดียวกัน:<br><span style="color:var(--color-text-secondary);font-size:12px;">ปี 2024 · ขาบวมเหมือนกัน → ให้ยาขับน้ำอ่อนๆ → หาย → กลับบ้าน ✓</span>',chips:[['เคสคล้าย 12 ราย','pur'],['ส่วนใหญ่ = fluid overload','ok']]},
+
+    /* ---- THE STATE-DIFF MOMENT (Nerves) ---- */
+    {o:'state',lv:'lv2',state:true},
+
+    /* ---- TRADE-OFF (Brain) ---- */
+    {o:'brain',lv:'lv3',tradeoff:true},
+
+    {o:'brake',lv:'lv3',t:'🛑 รอบก่อนไตยังดี (Stage 2) ยาขับน้ำเลยปลอดภัย<br><span style="color:var(--color-text-danger);font-size:12px;">รอบนี้ไตแย่ลง (Stage 3) — ทำซ้ำเดิมอาจดันไตให้พังเร็วขึ้น ผมเป็นห่วงครับ</span>',danger:true},
+
+    {o:'voice',lv:'lv3',dual:true}
+  ];
+
+  function chipHTML(arr){return '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">'+arr.map(function(ch){return '<span class="chip" style="opacity:0;transition:opacity .3s;font-size:12px;padding:3px 9px;border-radius:var(--border-radius-md);background:var(--'+ch[1]+'-bg);color:var(--'+ch[1]+'-fg);">'+ch[0]+'</span>';}).join('')+'</div>';}
+
+  var stream=document.getElementById('bf-stream'),status=document.getElementById('bf-status'),timers=[];
+  function clearAll(){timers.forEach(clearTimeout);timers=[];stream.innerHTML='';organs.forEach(function(o){oEl[o.k].dataset.done='';setOrgan(o.k,'idle');});status.textContent='';lv(null);}
+
+  function appendCard(html,extraCss){var row=document.createElement('div');row.style.cssText='opacity:0;transform:translateY(6px);transition:all .4s;font-size:13px;line-height:1.55;'+(extraCss||'');row.innerHTML=html;stream.appendChild(row);requestAnimationFrame(function(){row.style.opacity='1';row.style.transform='none';});return row;}
+
+  function run(){
+    clearAll();var t=300;
+    steps.forEach(function(s,idx){
+      timers.push(setTimeout(function(){
+        organs.forEach(function(o){if(oEl[o.k].dataset.done)setOrgan(o.k,'done');});
+        setOrgan(s.o,'active');lv(s.lv);
+
+        if(s.state){
+          /* STATE DIFF CARD */
+          var html='<div style="background:var(--warn-bg);border-radius:var(--border-radius-md);padding:10px 12px;">'
+            +'<p style="margin:0 0 8px;font-size:12px;font-weight:600;color:var(--warn-fg);">⚡ เดี๋ยวก่อน — เคสเก่าสำเร็จจริง แต่ "สถานะวันนี้" เปลี่ยนไปรึเปล่า?</p>'
+            +'<div style="display:flex;align-items:center;gap:10px;font-size:12px;">'
+              +'<div style="flex:1;background:var(--color-background-primary);border-radius:8px;padding:7px 9px;text-align:center;"><div style="font-size:10px;color:var(--color-text-tertiary);">Past State · 2024</div><div style="font-weight:700;color:var(--ok-fg);">CKD Stage 2</div></div>'
+              +'<div style="font-size:18px;color:var(--warn-fg);">→</div>'
+              +'<div style="flex:1;background:var(--color-background-primary);border-radius:8px;padding:7px 9px;text-align:center;border:1px solid var(--dang-fg);"><div style="font-size:10px;color:var(--color-text-tertiary);">Current State · 2026</div><div style="font-weight:700;color:var(--dang-fg);">CKD Stage 3</div></div>'
+            +'</div>'
+            +'<p style="margin:8px 0 0;font-size:12px;color:var(--warn-fg);">⚠ Patient state changed — <b>ทำซ้ำ protocol เดิมไม่ได้แล้ว</b></p>'
+            +'<p style="margin:6px 0 0;font-size:12px;color:var(--warn-fg);">🧠 Re-evaluating recommendation...</p>'
+          +'</div>';
+          appendCard(html);
+        }
+        else if(s.tradeoff){
+          /* TRADE-OFF MATRIX CARD */
+          var html='<div style="background:var(--pur-bg);border-radius:var(--border-radius-md);padding:10px 12px;">'
+            +'<p style="margin:0 0 4px;font-size:12px;font-weight:600;color:var(--pur-fg);">⚖️ จริงพร้อมกันหมด 6 หลักฐาน — ไม่มีอันไหนผิด ปัญหาคือ "ให้น้ำหนักอะไร"</p>'
+            +'<p style="margin:0 0 8px;font-size:11px;color:var(--pur-fg);">CHF · CKD · CHF · เคสเก่าสำเร็จ · ยาเดิม · ไตปัจจุบัน → ชั่งน้ำหนักเป็น 2 ทางเลือก</p>'
+            +'<table class="matrix"><tr><th>มิติที่ชั่ง</th><th><span class="pillA">A · textbook</span><br>ยาขับน้ำแรง</th><th><span class="pillB">B · เฉพาะแม่</span><br>จำกัดเกลือ+ทบทวนยา</th></tr>'
+              +'<tr><td class="dim">ได้ผลเร็ว</td><td>✓✓ เร็ว</td><td>✓ ช้ากว่า</td></tr>'
+              +'<tr><td class="dim">ปลอดภัยต่อไต Stage 3</td><td style="color:var(--dang-fg);">⚠ เสี่ยงไตทรุด</td><td style="color:var(--ok-fg);">✓✓ ถนอมไต</td></tr>'
+              +'<tr><td class="dim">ตรงกับสถานะวันนี้</td><td style="color:var(--dang-fg);">✗ อิงไต Stage 2</td><td style="color:var(--ok-fg);">✓ อิงไต Stage 3</td></tr>'
+            +'</table>'
+            +'<div style="margin-top:8px;background:var(--ok-bg);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--ok-fg);">👉 <b>แนะนำ Option B สำหรับเคสนี้</b> — เพราะ kidney risk เพิ่มขึ้น ไม่ใช่เพราะ B ดีกว่าเสมอไป</div>'
+          +'</div>';
+          appendCard(html);
+        }
+        else if(s.dual){
+          var html='<div style="background:var(--info-bg);border-radius:var(--border-radius-md);padding:9px 11px;margin-bottom:8px;"><p style="margin:0 0 3px;font-size:11px;font-weight:600;color:var(--info-fg);">🩺 พูดกับหมอ (clinical + options)</p><p style="margin:0;font-size:12px;color:var(--info-fg);line-height:1.55;">"เคสนี้น่าจะ fluid overload จาก CKD ที่แย่ลงจาก Stage 2 → 3 ครับ — textbook คือยาขับน้ำ (A) แต่<b>เฉพาะเคสนี้</b> เพราะไตแย่ลง ผมแนะนำ Option B: จำกัดเกลือ + ทบทวนยา ก่อนให้ยาขับน้ำซ้ำครับ"</p></div>'
+            +'<div style="background:var(--ok-bg);border-radius:var(--border-radius-md);padding:9px 11px;"><p style="margin:0 0 3px;font-size:11px;font-weight:600;color:var(--ok-fg);">👧 พูดกับลูก (plain)</p><p style="margin:0;font-size:12px;color:var(--ok-fg);line-height:1.55;">"คราวก่อนหมอให้ยาขับน้ำแล้วหายเพราะไตแม่ยังโอเคนะคะ แต่รอบนี้ไตแม่อ่อนลงกว่าเดิม ถ้าให้ยาแรงเหมือนเดิมอาจกระทบไต ช่วยคุมของเค็ม-ของหวาน และจดปริมาณฉี่ไว้ให้หมอดูด้วยนะคะ"</p></div>';
+          var w=appendCard(html);
+        }
+        else {
+          var row=appendCard(s.t,s.danger?'background:var(--dang-bg);border-radius:var(--border-radius-md);padding:8px 10px;':'');
+          if(s.chips){var c=document.createElement('div');c.innerHTML=chipHTML(s.chips);row.appendChild(c.firstChild);var sps=row.querySelectorAll('.chip');sps.forEach(function(sp,ci){timers.push(setTimeout(function(){sp.style.opacity='1';},140*(ci+1)));});}
+        }
+
+        oEl[s.o].dataset.done='1';
+        if(idx===steps.length-1){status.textContent='• นี่ไม่ใช่ Retrieval — นี่คือ State-aware Reasoning 💥';timers.push(setTimeout(function(){organs.forEach(function(o){setOrgan(o.k,'done');});lv('lv3');},500));
+          appendCard('<div style="background:#111317;color:#fff;border-radius:var(--border-radius-md);padding:10px 12px;margin-top:2px;"><p style="margin:0;font-size:12.5px;line-height:1.6;">เจอเคสเก่าที่สำเร็จ <span style="color:#7fe3b8;">✓</span> — แต่สถานะวันนี้เปลี่ยน <span style="color:#ffd27f;">⚡</span> → ผม<b>ไม่</b>แนะนำให้ทำเหมือนเดิม<br><span style="font-size:11px;opacity:.7;">Retrieval บอกแค่ "เจอแล้ว" · Reasoning บอกว่า "เจอแล้ว แต่ไม่ควรทำเหมือนเดิม"</span></p></div>');
+        }
+      },t));
+      t+=s.chips?1500:(s.state?1700:(s.tradeoff?2000:(s.dual?1300:1100)));
+    });
+  }
+  document.getElementById('bf-replay').addEventListener('click',run);run();
+})();
+</script>
+</div>
+</body>
+</html>

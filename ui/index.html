@@ -3,99 +3,162 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Watch Baymax allocate attention, change decisions, and stop unsafe actions.">
-  <title>Baymax · ER nurse assistant simulation</title>
+  <meta name="description" content="Baymax reads the hidden history behind one sentence — 'my mother's legs are swollen' — traces the trajectory, applies a kidney-safety brake, and speaks two ways: clinically to the doctor, plainly to the daughter.">
+  <title>Baymax · live reasoning theater</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='white' stroke='%237bb3d9'/><circle cx='22' cy='32' r='4' fill='%230f1923'/><path d='M26 32h12' stroke='%230f1923'/><circle cx='42' cy='32' r='4' fill='%230f1923'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/ui/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Self-contained palette — claude.ai design tokens ported to real hex so the
+       reasoning theater renders identically on Vercel (outside the Claude artifact host). */
+    :root{
+      --color-background-primary:#ffffff;
+      --color-background-secondary:#f4f2ec;
+      --color-border-tertiary:#e7e4da;
+      --color-border-secondary:#d7d3c6;
+      --color-text-secondary:#6b6960;
+      --color-text-tertiary:#9a978c;
+      --color-text-info:#0c447c;
+      --color-background-info:#e6f1fb;
+      --color-text-success:#085041;
+      --color-background-success:#e1f5ee;
+      --color-text-danger:#791f1f;
+      --color-background-danger:#fcebeb;
+      --border-radius-lg:14px;
+      --border-radius-md:9px;
+      --page-bg:#ece9e0;
+      --ink:#1f1d18;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;background:var(--page-bg);color:var(--ink);font-family:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+    .wrap{max-width:880px;margin:0 auto;padding:28px 20px 48px;}
+    header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;}
+    .id{display:flex;align-items:center;gap:11px;}
+    .mark{width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid #7bb3d9;display:flex;align-items:center;justify-content:center;gap:4px;flex:none;}
+    .mark i{width:5px;height:5px;border-radius:50%;background:#0f1923;display:block;}
+    .eyebrow{margin:0;font-size:10px;letter-spacing:0.22em;color:var(--color-text-tertiary);font-weight:600;}
+    .id h1{margin:1px 0 0;font-size:16px;font-weight:600;letter-spacing:-0.01em;}
+    .src{font-size:12px;color:var(--color-text-secondary);text-decoration:none;border:0.5px solid var(--color-border-secondary);padding:5px 10px;border-radius:var(--border-radius-md);background:#fff;}
+    .src:hover{color:var(--ink);}
+    .vswitch{display:flex;background:var(--color-background-secondary);border-radius:999px;padding:3px;}
+    .vbtn{font-size:11.5px;text-decoration:none;padding:5px 12px;border-radius:999px;color:var(--color-text-secondary);font-weight:500;white-space:nowrap;}
+    .vbtn.on{background:#111317;color:#fff;}
+    .proof{margin-top:14px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;justify-content:space-between;}
+    .proof .b{font-size:12px;color:var(--color-text-secondary);max-width:480px;}
+    .proof .b strong{color:var(--ink);font-weight:600;}
+    .proof .links{display:flex;gap:14px;flex-wrap:wrap;}
+    .proof .links a{font-size:12px;color:var(--color-text-info);text-decoration:none;font-weight:500;}
+    .proof .links a:hover{text-decoration:underline;}
+    .pill{font-size:10px;letter-spacing:0.08em;font-weight:600;color:var(--color-text-success);background:var(--color-background-success);padding:3px 9px;border-radius:999px;}
+  </style>
 </head>
 <body>
-  <main class="shell">
-    <header class="topbar">
-      <div class="identity">
-        <div class="baymax-mark" aria-hidden="true"><span></span><i></i><span></span></div>
+  <main class="wrap">
+    <header class="top">
+      <div class="id">
+        <span class="mark" aria-hidden="true"><i></i><i></i></span>
         <div>
           <p class="eyebrow">B A Y M A X</p>
           <h1>What did Baymax find that nobody mentioned?</h1>
         </div>
       </div>
-      <div class="topbar-actions">
-        <div class="working-state"><span class="working-dot"></span><span id="working-label">I am ready to review a case.</span></div>
-        <a class="source-link" href="https://github.com/anix-lynch/baymax" target="_blank" rel="noopener">&lt;/&gt; source</a>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="vswitch"><a class="vbtn on" href="/">v1 · Retrieval</a><a class="vbtn" href="/v2">v2 · State-aware&nbsp;⚡</a></div>
+        <a class="src" href="https://github.com/anix-lynch/baymax" target="_blank" rel="noopener">&lt;/&gt; source</a>
       </div>
     </header>
 
-    <section class="intro">
-      <p class="baymax-quote">At intake, her daughter says: <strong>“My mother’s legs are swollen.”</strong><br>The patient is the mother (71F). Baymax searches for the story hiding behind the symptom.</p>
-      <div class="case-tabs" role="tablist" aria-label="Baymax demo cases">
-        <button class="case-tab active" data-case="discovery" role="tab">01 · Discover hidden risk</button>
-        <button class="case-tab" data-case="attention" role="tab">02 · Focus attention</button>
-        <button class="case-tab" data-case="decision" role="tab">03 · Change course</button>
-        <button class="case-tab" data-case="brake" role="tab">04 · Stop safely</button>
-      </div>
-    </section>
+    <!-- ===== Live reasoning theater (designed in CoWork, ported to standalone hex) ===== -->
+    <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem;">
+    <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">Baymax full live reasoning theater: it retrieves the mother's history, medications, similar past cases and what the previous doctor did, traces the trajectory, applies a kidney-safety brake, and ends by speaking two ways — clinically to the doctor and plainly to the daughter.</h2>
 
-    <section class="workbench" aria-live="polite">
-      <article class="thinking-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">THINKING OUT LOUD</p>
-            <h2 id="thinking-title">What Baymax discovered before answering</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">🚑</span><span style="font-size:14px;font-weight:500;">Baymax กำลังคิด...</span><span id="bf-status" style="font-size:11px;color:var(--color-text-secondary);"></span></div>
+        <button id="bf-replay" style="font-size:12px;cursor:pointer;background:#fff;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:5px 10px;">▶ เล่นอีกครั้ง</button>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;">
+
+        <div style="flex:1.7;min-width:260px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;min-height:440px;">
+          <div style="display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:10px;">
+            <span style="font-size:15px;">👵</span><span style="font-size:13px;">"ขาแม่บวมค่ะ"</span><span style="font-size:11px;color:var(--color-text-tertiary);">— ประโยคเดียว</span>
           </div>
-          <button id="replay" class="replay-button" type="button" aria-label="Replay current case">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-            Replay
-          </button>
+          <div id="bf-stream" style="display:flex;flex-direction:column;gap:10px;"></div>
         </div>
-        <div id="patient-card" class="patient-card"></div>
-        <div id="discovery-card" class="discovery-card" hidden></div>
-        <ol id="transcript" class="transcript"></ol>
-        <div id="money-shot" class="money-shot" hidden></div>
-        <div id="result-card" class="result-card" hidden></div>
-      </article>
 
-      <aside class="vitals-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">LIVE ORGANS</p>
-            <h2>Organs currently working</h2>
-          </div>
-          <span class="truth-pill">simulation</span>
+        <div style="flex:1;min-width:200px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px;">
+          <p style="margin:0 0 10px;font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:0.04em;">🫀 อวัยวะที่ทำงาน</p>
+          <div id="bf-organs" style="display:flex;flex-direction:column;gap:6px;"></div>
         </div>
-        <div id="organs" class="organ-list"></div>
-        <div class="boundary-card">
-          <p class="eyebrow">HONEST BOUNDARY</p>
-          <p id="boundary">I am a simulation, not a clinician, and I am not connected to a real hospital.</p>
-        </div>
-      </aside>
-    </section>
 
-    <section class="honesty" aria-live="polite">
-      <div class="panel-heading">
-        <div>
-          <p class="eyebrow">HONESTY LEDGER · WEAKEST-LEAF LAW</p>
-          <h2>I claim only what the evidence can prove</h2>
-        </div>
-        <span id="honesty-headline" class="truth-pill">Awaiting proof</span>
       </div>
-      <p id="honesty-claim" class="honesty-claim"></p>
-      <div id="honesty-ledger" class="honesty-grid"></div>
-    </section>
+      <p style="margin:12px 0 0;font-size:11px;color:var(--color-text-tertiary);text-align:center;">retrieved related evidence — ไม่ใช่การวินิจฉัย/สั่งยา · ผมไม่ใช่หมอนะครับ</p>
 
-    <footer class="receipt">
-      <div>
-        <p class="eyebrow">OUTCOME RECEIPT</p>
-        <p id="receipt-text">I am verifying the outcome.</p>
+    <script>
+    (function(){
+      var organs=[
+        {k:'eye',i:'👁',n:'ตา · อาการ'},
+        {k:'mem',i:'🗃️',n:'ความจำ · ประวัติ'},
+        {k:'drug',i:'💊',n:'ยา · ที่แม่กินอยู่'},
+        {k:'cases',i:'🔁',n:'เคสเก่า · หมอคนก่อน'},
+        {k:'brain',i:'🧠',n:'สมอง · ต่อเรื่อง'},
+        {k:'brake',i:'🛑',n:'เบรก · กันพลาด'},
+        {k:'voice',i:'🗣️',n:'ปาก · 2 ภาษา'}
+      ];
+      var oWrap=document.getElementById('bf-organs'),oEl={};
+      organs.forEach(function(o){var d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);opacity:0.45;transition:all .3s;';d.innerHTML='<span style="font-size:14px;">'+o.i+'</span><span style="font-size:12px;flex:1;">'+o.n+'</span><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--color-border-secondary);"></span>';oWrap.appendChild(d);oEl[o.k]=d;});
+      function setOrgan(k,s){var d=oEl[k];if(!d)return;var dot=d.querySelector('.dot');if(s==='active'){d.style.opacity='1';d.style.background='var(--color-background-info)';dot.style.background='var(--color-text-info)';dot.style.boxShadow='0 0 0 4px var(--color-background-info)';}else if(s==='done'){d.style.opacity='1';d.style.background='var(--color-background-secondary)';dot.style.background='var(--color-text-success)';dot.style.boxShadow='none';}else{d.style.opacity='0.45';d.style.background='var(--color-background-secondary)';dot.style.background='var(--color-border-secondary)';dot.style.boxShadow='none';}}
+
+      var steps=[
+        {o:'eye',t:'👁 เก็บอาการพื้นผิว: <b>ขาบวม</b>'},
+        {o:'mem',t:'🗃️ เปิดประวัติแม่... ไม่มีใครบอก แต่ผมเจอ:',chips:[['❤️ CHF','#FCEBEB','#791F1F'],['🧪 CKD stage 3','#E1F5EE','#085041'],['🩸 เบาหวาน','#FAEEDA','#633806'],['🫁 น้ำท่วมปอด','#E6F1FB','#0C447C']]},
+        {o:'drug',t:'💊 ดูยาที่แม่กินอยู่ตอนนี้:',chips:[['ยาเบาหวาน','#FAEEDA','#633806'],['ยาความดัน','#E6F1FB','#0C447C'],['⚠️ เกลือสูง = บวมหนักขึ้น','#FCEBEB','#791F1F']]},
+        {o:'cases',t:'🔁 หมอคนก่อนทำอะไรไปแล้ว:<br><span style="color:var(--color-text-secondary);font-size:12px;">admit ขาบวม 2 วัน → อาการหาย → ให้กลับบ้าน</span>',chips:[['เคสคล้าย 12 ราย','#EEEDFE','#26215C'],['ส่วนใหญ่ = fluid overload','#E1F5EE','#085041']]},
+        {o:'brain',t:'🧠 ต่อเส้นทาง (ซ้ำรอยเดิม):<br><span style="font-size:12px;">เบาหวานคุมไม่อยู่ → ไตเสื่อม → น้ำคั่ง → <b>ขาบวม</b></span>'},
+        {o:'brake',t:'🛑 ไตแม่ระยะ 3 — อย่าให้ยาขับน้ำแรงซ้ำแบบไม่ดูไต<br><span style="color:var(--color-text-danger);font-size:12px;">รอบก่อน "หาย" แต่ไม่ได้แก้ที่ต้นเหตุ ผมเป็นห่วงครับ</span>',danger:true},
+        {o:'voice',dual:true}
+      ];
+
+      var stream=document.getElementById('bf-stream'),status=document.getElementById('bf-status'),timers=[];
+      function clearAll(){timers.forEach(clearTimeout);timers=[];stream.innerHTML='';organs.forEach(function(o){oEl[o.k].dataset.done='';setOrgan(o.k,'idle');});status.textContent='';}
+
+      function run(){
+        clearAll();var t=300;
+        steps.forEach(function(s,idx){
+          timers.push(setTimeout(function(){
+            organs.forEach(function(o){if(oEl[o.k].dataset.done)setOrgan(o.k,'done');});
+            setOrgan(s.o,'active');
+            if(s.dual){
+              var wrap=document.createElement('div');wrap.style.cssText='opacity:0;transform:translateY(6px);transition:all .35s;display:flex;flex-direction:column;gap:8px;';
+              wrap.innerHTML='<div style="background:var(--color-background-info);border-radius:var(--border-radius-md);padding:9px 11px;"><p style="margin:0 0 3px;font-size:11px;font-weight:500;color:var(--color-text-info);">🩺 พูดกับหมอ</p><p style="margin:0;font-size:12px;color:var(--color-text-info);line-height:1.5;">"เคสนี้น่าจะ fluid overload จาก CKD ซ้ำรอยเดิมครับ พิจารณาจำกัดเกลือ + ทบทวนยาก่อนให้ยาขับน้ำซ้ำ"</p></div>'+
+                '<div style="background:var(--color-background-success,#E1F5EE);border-radius:var(--border-radius-md);padding:9px 11px;"><p style="margin:0 0 3px;font-size:11px;font-weight:500;color:#085041;">👧 พูดกับลูก</p><p style="margin:0;font-size:12px;color:#085041;line-height:1.5;">"ถ้าขาแม่เริ่มตึง ๆ แปลว่าน้ำตาลคุมไม่อยู่แล้วนะคะ ช่วยคุมของหวาน+ของเค็มให้แม่ และจดปริมาณฉี่ไว้ให้หมอดูด้วยนะคะ"</p></div>';
+              stream.appendChild(wrap);requestAnimationFrame(function(){wrap.style.opacity='1';wrap.style.transform='none';});
+            } else {
+              var row=document.createElement('div');row.style.cssText='opacity:0;transform:translateY(6px);transition:all .35s;font-size:13px;line-height:1.5;'+(s.danger?'background:var(--color-background-danger);border-radius:var(--border-radius-md);padding:8px 10px;':'');row.innerHTML=s.t;
+              if(s.chips){var c=document.createElement('div');c.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;';s.chips.forEach(function(ch,ci){var sp=document.createElement('span');sp.style.cssText='opacity:0;transition:opacity .3s;font-size:12px;padding:3px 9px;border-radius:var(--border-radius-md);background:'+ch[1]+';color:'+ch[2]+';';sp.innerHTML=ch[0];c.appendChild(sp);timers.push(setTimeout(function(){sp.style.opacity='1';},140*(ci+1)));});row.appendChild(c);}
+              stream.appendChild(row);requestAnimationFrame(function(){row.style.opacity='1';row.style.transform='none';});
+            }
+            oEl[s.o].dataset.done='1';
+            if(idx===steps.length-1){status.textContent='• เสร็จ — เห็นทุกมุมก่อนตอบ 💥';timers.push(setTimeout(function(){organs.forEach(function(o){setOrgan(o.k,'done');});},500));}
+          },t));
+          t+=s.chips?1500:(s.dual?1100:1050);
+        });
+      }
+      document.getElementById('bf-replay').addEventListener('click',run);run();
+    })();
+    </script>
+    </div>
+    <!-- ===== /theater ===== -->
+
+    <!-- L2 proof rail: this is a simulation, and every claim is backed by an auditable receipt. -->
+    <div class="proof">
+      <p class="b"><span class="pill">SIMULATION</span> &nbsp;ไม่ใช่หมอ ไม่ได้ต่อกับโรงพยาบาลจริง — <strong>Baymax อ้างได้เฉพาะที่หลักฐานพิสูจน์ได้ (weakest-leaf law)</strong>. ทุกขั้นมี receipt ตรวจย้อนได้.</p>
+      <div class="links">
+        <a href="../outputs/baymax_audit.json" target="_blank" rel="noopener">audit JSON ↗</a>
+        <a href="../outputs/deployment_readiness_receipt.json" target="_blank" rel="noopener">rollout drill ↗</a>
       </div>
-      <div class="receipt-actions">
-        <span id="receipt-state" class="receipt-state">Awaiting result</span>
-        <a href="../outputs/baymax_audit.json">View audit JSON</a>
-        <a href="../outputs/deployment_readiness_receipt.json">View rollout drill</a>
-      </div>
-    </footer>
+    </div>
   </main>
-  <script src="/ui/app.js"></script>
 </body>
 </html>

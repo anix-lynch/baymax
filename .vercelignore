@@ -1,0 +1,11 @@
+.git
+sources
+backend
+baymax-engine
+aikido_belts
+*.db
+*.gif
+data
+tests
+*.png
+node_modules
