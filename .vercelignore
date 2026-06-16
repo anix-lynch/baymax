@@ -9,3 +9,4 @@ data
 tests
 *.png
 node_modules
+_private

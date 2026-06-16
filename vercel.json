@@ -1,7 +1,6 @@
 {
   "rewrites": [
     { "source": "/", "destination": "/ui/baymax/index.html" },
-    { "source": "/v2", "destination": "/ui/v2.html" },
     { "source": "/baymax", "destination": "/ui/baymax/index.html" },
     { "source": "/baymax/(.*)", "destination": "/ui/baymax/$1" }
   ]
